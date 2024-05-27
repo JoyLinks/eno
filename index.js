@@ -23,16 +23,16 @@ export default {
  */
 function show(element) {
 	if (element) {
+		if (element.trim) {
+			show(selects(element));
+		} else
 		if (element.length) {
 			for (let i = 0; i < element.length; i++) {
 				show(element[i]);
 			}
-		} else {
-			if (element.nodeType) {
-				element.hidden = false;
-			} else {
-				show(selects(element));
-			}
+		} else
+		if (element.nodeType) {
+			element.hidden = false;
 		}
 	}
 }
@@ -42,16 +42,16 @@ function show(element) {
  */
 function hide(element) {
 	if (element) {
+		if (element.trim) {
+			hide(selects(element));
+		} else
 		if (element.length) {
 			for (let i = 0; i < element.length; i++) {
 				hide(element[i]);
 			}
-		} else {
-			if (element.nodeType) {
-				element.hidden = true;
-			} else {
-				hide(selects(element));
-			}
+		} else
+		if (element.nodeType) {
+			element.hidden = true;
 		}
 	}
 }
@@ -61,9 +61,16 @@ function hide(element) {
  * @param {Object} element 要显示的元素
  */
 function toggle(parent, element) {
+	if (arguments.length == 1) {
+		// toggle(element);
+
+	}
 	if (parent && element) {
-		if (parent.nodeType) {} else {
+		if (parent.trim) {
 			parent = select(parent);
+		}
+		if (element.trim) {
+			element = select(element);
 		}
 		if (element.parentElement != parent) {
 			parent.appendChild(element);
@@ -80,53 +87,64 @@ function toggle(parent, element) {
 
 /**
  * 在指定元素内/整个文档查找标签
- * @param {Element} elements 元素内
- * @param {String} selectors 选择器
+ * @param {Element} element 元素内
+ * @param {String} selector 选择器
  */
-function select(elements, selectors) {
+function select(element, selector) {
 	// 仅指定1个参数
 	if (arguments.length == 1) {
-		// select(selectors);
-		selectors = elements;
-		return document.querySelector(selectors);
+		// select(selector);
+		selector = element;
+		return document.querySelector(selector);
 	}
 	// 指定了2个参数
 	if (arguments.length >= 2) {
-		// select(elements, selectors);
-		if (elements.length) {
-			let element;
-			for (let i = 0; i < elements.length; i++) {
-				element = elements[index].querySelector(selectors);
-				if (element) {
-					return element;
+		// select(element, selector);
+		if (element) {
+			if (element.trim) {
+				element = document.querySelectorAll(element);
+			}
+			if (element.nodeType) {
+				return element.querySelector(selector);
+			} else
+			if (Array.isArray(element)) {
+				let node;
+				for (let i = 0; i < elements.length; i++) {
+					node = elements[i].querySelector(selector);
+					if (node) {
+						return node;
+					}
 				}
 			}
 			return null;
 		} else {
-			return elements.querySelector(selectors);
+			return document.querySelector(selector);
 		}
 	}
 }
 
 /**
  * 在指定元素内/整个文档查找标签
- * @param {Element} elements 元素内
- * @param {String} selectors 选择器
+ * @param {Element} element 元素内
+ * @param {String} selector 选择器
  */
-function selects(elements, selectors) {
+function selects(element, selector) {
 	// 仅指定1个参数
 	if (arguments.length == 1) {
-		// select(selectors);
-		selectors = elements;
-		return document.querySelectorAll(selectors);
+		// select(selector);
+		selector = element;
+		return document.querySelectorAll(selector);
 	}
 	// 指定了2个参数
 	if (arguments.length >= 2) {
-		// select(elements, selectors);
+		// select(element, selector);
 		let nodes, items = new Array();
-		if (elements.length) {
-			for (let i = 0; i < elements.length; i++) {
-				nodes = elements[index].querySelectorAll(selectors);
+		if (element.trim) {
+			element = document.querySelectorAll(element);
+		}
+		if (Array.isArray(element)) {
+			for (let i = 0; i < element.length; i++) {
+				nodes = element[i].querySelectorAll(selector);
 				if (nodes && nodes.length) {
 					for (let i = 0; i < nodes.length; ++i) {
 						items.push(nodes[i]);
@@ -134,7 +152,7 @@ function selects(elements, selectors) {
 				}
 			}
 		} else {
-			nodes = elements.querySelectorAll(selectors);
+			nodes = element.querySelectorAll(selector);
 			if (nodes && nodes.length) {
 				for (let i = 0; i < nodes.length; ++i) {
 					items.push(nodes[i]);
@@ -241,7 +259,7 @@ function create(parent, html, place) {
 function remove(element) {
 	if (element.length) {
 		for (let i = 0; i < element.length; i++) {
-			element[i].remove();
+			remove(element[i]);
 		}
 	} else {
 		if (element.remove) element.remove();
@@ -325,7 +343,7 @@ function sets(elements, parameters, converter = defaultConverter) {
 			if (parameters.length) {
 				return sets(elements.children, parameters, converter);
 			} else {
-				element.userData = parameters;
+				elements.userData = parameters;
 				return set(elements, parameters, converter);
 			}
 		}
