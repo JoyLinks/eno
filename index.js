@@ -127,6 +127,7 @@ function select(element, selector) {
  * 在指定元素内/整个文档查找标签
  * @param {Element} element 元素内
  * @param {String} selector 选择器
+ * @returns {NodeList} 元素集合/空集合
  */
 function selects(element, selector) {
 	// 仅指定1个参数
@@ -257,12 +258,22 @@ function create(parent, html, place) {
  * @param {Element} element 元素/元素数组
  */
 function remove(element) {
-	if (element.length) {
-		for (let i = 0; i < element.length; i++) {
-			remove(element[i]);
+	if (element) {
+		if (element.trim) {
+			// remove("p");
+			element = selects(element);
 		}
-	} else {
-		if (element.remove) element.remove();
+		if (element.tagName) {
+			// remove(document.getElementById("test"));
+			element.remove();
+		} else
+		if (element.length) {
+			// remove(["p","span"]);
+			// remove(document.getElementByTagName("div"));
+			for (let i = 0; i < element.length; i++) {
+				remove(element[i]);
+			}
+		}
 	}
 }
 
@@ -271,80 +282,127 @@ function defaultConverter(element, parameter, name) {}
 
 /**
  * 从指定元素获取值以JSON对象返回{name:value}
- * @param {Element} elements 元素
+ * @param {Element} element 元素
  * @param {Function} converter 转换
  * @returns {Object} {name1:value1,name2:value2,...}
  */
-function gets(elements, converter = defaultConverter) {
-	if (Array.isArray(elements)) {
-		let parameter = {},
-			parameters = new Array();
-		for (let i = 0; i < elements.length; i++) {
-			get(elements[i], parameter, converter);
-			if (Object.keys(parameter).length) {
-				parameters.push(parameter);
-				parameter = {};
-			}
+function gets(element, converter = defaultConverter) {
+	if (element) {
+		if (element.trim) {
+			element = selects(element);
 		}
-		return parameters;
-	} else {
-		let parameter = {};
-		get(elements, parameter, converter);
-		return parameter;
+		if (Array.isArray(element)) {
+			let parameter = {},
+				parameters = new Array();
+			for (let i = 0; i < element.length; i++) {
+				get(element[i], parameter, converter);
+				if (Object.keys(parameter).length) {
+					parameters.push(parameter);
+					parameter = {};
+				}
+			}
+			return parameters;
+		} else {
+			let parameter = {};
+			get(element, parameter, converter);
+			return parameter;
+		}
 	}
 }
 /**
  * 从指定JSON设置元素值，以name属性作为标识
- * @param {Element} elements 元素
- * @param {Object} parameters 对象
+ * @param {Element} element 元素
+ * @param {Object} parameter 对象
  * @param {Function} converter 转换
- * @returns {Element} elements
+ * @returns {Element} element
  */
-function sets(elements, parameters, converter = defaultConverter) {
-	if (elements) {
-		if (elements.length) {
-			if (parameters) {
-				let i = 0;
-				if (parameters.length) {
-					let element;
-					for (; i < parameters.length; i++) {
-						if (i < elements.length) {
+function sets(element, parameter, converter = defaultConverter) {
+	if (element) {
+		if (element.trim) {
+			// 元素选择字符串
+			element = selects(element);
+			if (element.length == 0) {
+				return null;
+			} else
+			if (element.length == 1) {
+				element = element[0];
+			} else {
+				// 多个匹配元素
+			}
+		}
+
+		if (parameter) {
+			if (Array.isArray(parameter)) {
+				if (element.nodeType) {
+					if (element.childElementCount) {
+						element = element.children;
+					} else {
+						// ???
+						return null;
+					}
+				}
+				if (parameter.length) { // [a,b]
+					let node, i = 0;
+					// 构造填充元素
+					for (; i < parameter.length; i++) {
+						if (i < element.length) {
 							// 重用已有元素
-							element = elements[i];
-						} else if (element) {
+							node = element[i];
+						} else if (node) {
 							// 克隆新的元素
-							element = element.parentElement.appendChild(element.cloneNode(true));
+							node = node.parentElement.appendChild(node.cloneNode(true));
 						} else {
 							// 干不了
 							continue;
 						}
-						element.userData = parameters[i];
-						set(element, parameters[i], converter);
-						element.hidden = false;
+						node.userData = parameter[i];
+						set(node, parameter[i], converter);
+						node.hidden = false;
 					}
-				} else {
-					element.userData = parameters;
-					set(elements[0], parameters, converter);
-					i++;
+					// 移除多余元素
+					while (element.length > i) {
+						element[i].remove();
+					}
+					return element;
+				} else { // []
+					// 保留模板
+					element[0].hidden = true;
+					// 移除多余元素
+					while (element.length > 1) {
+						element[1].remove();
+					}
+					return element;
 				}
-				// 移除多余元素
-				for (; i < elements.length; i++) {
-					elements[i].remove();
+			} else { // Object
+				if (element.nodeType) {
+					element.userData = parameter;
+					set(element, parameter, converter);
+					return element;
 				}
-			} else {
-				// 保留模板
-				elements[0].hidden = true;
-				// 移除多余元素
-				for (let i = 1; i < elements.length; i++) {
-					elements[i].remove();
+				if (element.length) {
+					for (let node, i = 0; i < element.length; i++) {
+						node = element[i];
+						node.userData = parameter;
+						set(node, parameter, converter);
+						node.hidden = false;
+					}
+					return element;
 				}
 			}
-		} else {
-			if (parameters.length) {
-				return sets(elements.children, parameters, converter);
-			} else {
-				elements.userData = parameters;
-				return set(elements, parameters, converter);
+		} else { // null / undefine
+			if (element.nodeType) {
+				node.userData = null;
+				set(node, null, converter);
+				return element;
+			}
+			if (element.length) {
+				// 保留模板
+				element[0].hidden = true;
+				// 移除多余元素
+				while (element.length > 1) {
+					element[1].remove();
+				}
+				return element;
 			}
 		}
 	}
@@ -460,14 +518,12 @@ function valu(o, name, value) {
  * @param {Object} o
  */
 function text(o) {
-	if (o) {
-		if (Array.isArray(o)) {
-			// 数组值合并（逗号分割）
-			return o.join(',');
-		} else {
-			return o.toString();
-		}
-	} else {
-		return "";
+	if (Array.isArray(o)) {
+		// 数组值合并（逗号分割）
+		return o.join(',');
 	}
+	if (o != undefined) {
+		return o.toString();
+	}
+	return "";
 }
