@@ -333,45 +333,107 @@ function sets(element, parameter, converter = defaultConverter) {
 
 		if (parameter) {
 			if (Array.isArray(parameter)) {
-				if (element.nodeType) {
-					if (element.childElementCount) {
-						element = element.children;
-					} else {
-						// ???
-						return null;
+				// if (element.nodeType) {
+				// 	if (element.childElementCount) {
+				// 		element = element.children;
+				// 	} else {
+				// 		// ???
+				// 		return null;
+				// 	}
+				// }
+
+				let i = 0;
+				if (element.ENO_SETS) {
+					element.ENO_SETS = element.ENO_SETS + 1;
+				} else {
+					element.ENO_SETS = 1;
+					// ...<template>...
+					for (; i < element.children.length; i++) {
+						if (element.children[i].content) {
+							element.template = element.children[i];
+							element.a = ++i;
+							element.b = element.children.length - i;
+							break;
+						}
 					}
 				}
-				if (parameter.length) { // [a,b]
-					let node, i = 0;
-					// 构造填充元素
-					for (; i < parameter.length; i++) {
-						if (i < element.length) {
-							// 重用已有元素
-							node = element[i];
-						} else if (node) {
-							// 克隆新的元素
-							node = node.parentElement.appendChild(node.cloneNode(true));
-						} else {
-							// 干不了
-							continue;
+
+				if (element.template) {
+					// 已定义模板
+					if (parameter.length) { // [a,b]
+						let node, n;
+						// 构造填充元素
+						for (i = 0; i < parameter.length; i++) {
+							if (element.a + i < element.children.length - element.b) {
+								// 重用已有元素
+								for (n = 0; n < element.template.content.childElementCount; n++) {
+									node = element.children[element.a + i + n];
+									node.userData = parameter[i];
+									set(node, parameter[i], converter);
+									node.hidden = false;
+								}
+							} else {
+								// 克隆新的元素(DocumentFragment)
+								node = element.template.content.cloneNode(true);
+								n = i * element.template.content.childElementCount;
+								node = element.insertBefore(node, element.children[element.a + n]);
+								node = node.children;
+								for (n = 0; n < node.length; n++) {
+									node[n].userData = parameter[i];
+									set(node[n], parameter[i], converter);
+									node[n].hidden = false;
+								}
+							}
 						}
-						node.userData = parameter[i];
-						set(node, parameter[i], converter);
-						node.hidden = false;
+						// 移除多余元素
+						n = i * element.template.content.childElementCount;
+						i = element.a + element.b;
+						while (element.children.length > i + n) {
+							element.children[element.a + n].remove();
+						}
+						return element;
+					} else { // []
+						// 移除多余元素
+						i = element.a + element.b;
+						while (element.length > i) {
+							element[element.a + 1].remove();
+						}
+						return element;
 					}
-					// 移除多余元素
-					while (element.length > i) {
-						element[i].remove();
+				} else {
+					// 未使用模板
+					if (parameter.length) { // [a,b]
+						let node;
+						// 构造填充元素
+						for (i = 0; i < parameter.length; i++) {
+							if (i < element.children.length) {
+								// 重用已有元素
+								node = element.children[i];
+							} else if (node) {
+								// 克隆新的元素
+								node = element.appendChild(node.cloneNode(true));
+							} else {
+								// 干不了
+								continue;
+							}
+							node.userData = parameter[i];
+							set(node, parameter[i], converter);
+							node.hidden = false;
+						}
+						// 移除多余元素
+						while (element.children.length > i) {
+							element.children[i].remove();
+						}
+						return element;
+					} else { // []
+						// 保留模板
+						element[0].hidden = true;
+						// 移除多余元素
+						while (element.children.length > 1) {
+							element.children[1].remove();
+						}
+						return element;
 					}
-					return element;
-				} else { // []
-					// 保留模板
-					element[0].hidden = true;
-					// 移除多余元素
-					while (element.length > 1) {
-						element[1].remove();
-					}
-					return element;
 				}
 			} else { // Object
 				if (element.nodeType) {
@@ -384,15 +446,14 @@ function sets(element, parameter, converter = defaultConverter) {
 						node = element[i];
 						node.userData = parameter;
 						set(node, parameter, converter);
-						node.hidden = false;
 					}
 					return element;
 				}
 			}
 		} else { // null / undefine
 			if (element.nodeType) {
-				node.userData = null;
-				set(node, null, converter);
+				element.userData = null;
+				set(element, null, converter);
 				return element;
 			}
 			if (element.length) {
