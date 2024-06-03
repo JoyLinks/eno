@@ -8,6 +8,7 @@ export default {
 
 	select,
 	selects,
+	query,
 
 	toggle,
 	show,
@@ -277,6 +278,45 @@ function remove(element) {
 	}
 }
 
+/**
+ * 读取 URL 中的 Query String 参数值
+ * @param {String} name 参数名
+ */
+function query(url, name) {
+	if (arguments.length == 1) {
+		// getQueryString(name)
+		name = url;
+		// window.location.search 返回从问号?开始的URL查询部分
+		// ?name1=value1&name2=value2
+		url = window.location.search;
+	}
+	if (arguments.length == 2) {
+		// getQueryString(url, name)
+		let index = url.indexof("?");
+		if (index > 0) {
+			url = url.substring(index);
+		} else {
+			return null;
+		}
+	}
+
+	if (url) {
+		let start = url.indexOf(name);
+		if (start >= 0) {
+			start += name.length;
+			if (url.charAt(start) == '=') {
+				start++;
+				let end = url.indexOf('&', start);
+				if (end >= 0) {
+					return url.substring(start, end);
+				}
+				return url.substring(start);
+			}
+		}
+	}
+	return null;
+}
+
 // 默认转换函数
 function defaultConverter(element, parameter, name) {}
 
@@ -427,7 +467,7 @@ function sets(element, parameter, converter = defaultConverter) {
 						return element;
 					} else { // []
 						// 保留模板
-						element[0].hidden = true;
+						element.children[0].hidden = true;
 						// 移除多余元素
 						while (element.children.length > 1) {
 							element.children[1].remove();
