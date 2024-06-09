@@ -9,6 +9,7 @@ export default {
 	select,
 	selects,
 	query,
+	on,
 
 	toggle,
 	show,
@@ -16,6 +17,8 @@ export default {
 
 	gets,
 	sets,
+	entity,
+	action
 }
 
 /**
@@ -162,6 +165,38 @@ function selects(element, selector) {
 			}
 		}
 		return items;
+	}
+}
+
+/**
+ * 绑定事件
+ * @param {Element} element
+ * @param {String} selector
+ * @param {String} evt
+ * @param {Function} listener
+ */
+function on(element, selector, evt, listener) {
+	if (arguments.length == 3) {
+		// on(element/selector, evt, listener);
+		listener = evt;
+		evt = selector;
+		if (element.trim) {
+			element = selects(element);
+		}
+	} else
+	if (arguments.length == 4) {
+		// on(element, selector, evt, listener);
+		element = selects(element, selector);
+	} else {
+		return;
+	}
+
+	if (Array.isArray(element)) {
+		for (let i = 0; i < element.length; i++) {
+			element[i].addEventListener(evt, listener);
+		}
+	} else {
+		element.addEventListener(evt, listener);
 	}
 }
 
@@ -627,4 +662,46 @@ function text(o) {
 		return o.toString();
 	}
 	return "";
+}
+/**
+ * 根据事件或元素获取由sets关联的实体对象
+ */
+function entity(e) {
+	if (e.target) {
+		e = e.target;
+	} else
+	if (e.srcElement) {
+		e = e.srcElement;
+	}
+
+	while (e) {
+		if (e.userData) {
+			return e.userData;
+		} else {
+			e = e.parentElement;
+		}
+	}
+	return null;
+}
+/**
+ * 根据事件或元素获取属性指定的动作
+ * @param {Event} e
+ * @param {String} a
+ */
+function action(e, a) {
+	if (e.target) {
+		e = e.target;
+	} else
+	if (e.srcElement) {
+		e = e.srcElement;
+	}
+
+	while (e) {
+		if (e.hasAttribute(a)) {
+			return true;
+		} else {
+			e = e.parentElement;
+		}
+	}
+	return false;
 }

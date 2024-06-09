@@ -84,12 +84,12 @@ let values = eno.gets(element);
 获取指定URL或当前URL中的查询字符串参数。
 
 ```javascript
+// 从当前URL获取参数
+let token = eno.query("token");
+
 // 从指定URL获取参数
 let url = "http://www.joyzl.net/test?name=value";
 let value = eno.query(url, "name");
-
-// 从当前URL获取参数
-let token = eno.query("token");
 ```
 
 ### select
