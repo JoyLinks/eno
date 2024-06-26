@@ -11,14 +11,20 @@ export default {
 	query,
 	on,
 
-	toggle,
 	show,
 	hide,
+	stack,
+	toggle,
 
 	gets,
 	sets,
 	entity,
-	action
+	action,
+	element,
+
+	date,
+	time,
+	datetime
 }
 
 /**
@@ -62,14 +68,24 @@ function hide(element) {
 /**
  * 切换指定元素显示，其余元素隐藏
  * @param {Object} parent 父级
- * @param {Object} element 要显示的元素
+ * @param {Object} element 当前元素
+ * @param {String} className 类名称
  */
-function toggle(parent, element) {
+function toggle(parent, element, className) {
 	if (arguments.length == 1) {
 		// toggle(element);
-
-	}
-	if (parent && element) {
+		element = parent;
+		if (element.trim) {
+			element = select(element);
+		}
+		if (element.hidden) {
+			element.hidden = false;
+		} else {
+			element.hidden = true;
+		}
+	} else
+	if (arguments.length == 2) {
+		// toggle(parent,element);
 		if (parent.trim) {
 			parent = select(parent);
 		}
@@ -86,7 +102,18 @@ function toggle(parent, element) {
 				parent.children[i].hidden = true;
 			}
 		}
+	} else
+	if (arguments.length == 3) {
+		// toggle(parent,element,className);
+
 	}
+}
+
+function stack(parent, element, className) {
+	// 单选 增加class/移除其它
+	// 多选 增加class
+	// 增加 class
+	// 移除 class
 }
 
 /**
@@ -418,12 +445,14 @@ function sets(element, parameter, converter = defaultConverter) {
 				// }
 
 				let i = 0;
+				// 利用ENO_SET记录并判定是否首次
 				if (element.ENO_SETS) {
 					element.ENO_SETS = element.ENO_SETS + 1;
 				} else {
 					element.ENO_SETS = 1;
 					// ...<template>...
 					for (; i < element.children.length; i++) {
+						// 只有<template>模板具有content属性
 						if (element.children[i].content) {
 							element.template = element.children[i];
 							element.a = ++i;
@@ -450,14 +479,12 @@ function sets(element, parameter, converter = defaultConverter) {
 							} else {
 								// 克隆新的元素(DocumentFragment)
 								node = element.template.content.cloneNode(true);
-								n = i * element.template.content.childElementCount;
-								node = element.insertBefore(node, element.children[element.a + n]);
-								node = node.children;
-								for (n = 0; n < node.length; n++) {
-									node[n].userData = parameter[i];
-									set(node[n], parameter[i], converter);
-									node[n].hidden = false;
+								for (n = 0; n < node.childElementCount; n++) {
+									node.children.item(n).userData = parameter[i];
+									set(node.children.item(n), parameter[i], converter);
+									node.children.item(n).hidden = false;
 								}
+								element.insertBefore(node, element.children[element.a + i * node.childElementCount]);
 							}
 						}
 						// 移除多余元素
@@ -501,11 +528,13 @@ function sets(element, parameter, converter = defaultConverter) {
 						}
 						return element;
 					} else { // []
-						// 保留模板
-						element.children[0].hidden = true;
-						// 移除多余元素
-						while (element.children.length > 1) {
-							element.children[1].remove();
+						if (element.children.length) {
+							// 保留模板
+							element.children[0].hidden = true;
+							// 移除多余元素
+							while (element.children.length > 1) {
+								element.children[1].remove();
+							}
 						}
 						return element;
 					}
@@ -568,7 +597,7 @@ function get(element, parameter, converter) {
 	}
 	if (element.childElementCount) {
 		for (let i = 0; i < element.children.length; i++) {
-			get(element.children[i], parameter);
+			get(element.children[i], parameter, converter);
 		}
 	}
 }
@@ -666,12 +695,22 @@ function text(o) {
 /**
  * 根据事件或元素获取由sets关联的实体对象
  */
-function entity(e) {
-	if (e.target) {
-		e = e.target;
+function entity(e, selector) {
+	if (arguments.length == 1) {
+		// entity(event);
+		if (e.nodeType) {
+			e = e;
+		} else
+		if (e && e.target) {
+			e = e.target;
+		} else
+		if (e && e.srcElement) {
+			e = e.srcElement;
+		}
 	} else
-	if (e.srcElement) {
-		e = e.srcElement;
+	if (arguments.length == 2) {
+		// entity(element,selector);
+		e = select(e, selector);
 	}
 
 	while (e) {
@@ -704,4 +743,60 @@ function action(e, a) {
 		}
 	}
 	return false;
+}
+/**
+ * 根据事件获取绑定实体的元素
+ * @param {Event} e
+ */
+function element(e) {
+	if (e && e.target) {
+		e = e.target;
+	} else
+	if (e && e.srcElement) {
+		e = e.srcElement;
+	}
+
+	while (e) {
+		if (e.userData) {
+			return e;
+		} else {
+			e = e.parentElement;
+		}
+	}
+	return null;
+}
+
+/**
+ * 2024-6-24
+ */
+function date() {
+	const now = new Date();
+	const year = now.getFullYear();
+	const month = (now.getMonth() + 1 /*月份从0开始，需要加1*/ ).toString().padStart(2, '0');
+	const day = (now.getDate()).toString().padStart(2, '0');
+	return `${year}-${month}-${day}`;
+}
+
+/**
+ * 10:28:12
+ */
+function time() {
+	const now = new Date();
+	const hours = now.getHours();
+	const minutes = now.getMinutes();
+	const seconds = now.getSeconds();
+	return `${hours}:${minutes}:${seconds}`;
+}
+/**
+ * 2024-6-24 10:28:12
+ */
+function datetime() {
+	const now = new Date();
+	const year = now.getFullYear();
+	const month = now.getMonth() + 1 /*月份从0开始，需要加1*/ ;
+	const day = now.getDate();
+	const hours = now.getHours();
+	const minutes = now.getMinutes();
+	const seconds = now.getSeconds();
+	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
