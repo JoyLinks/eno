@@ -1,6 +1,6 @@
 {
 	"name": "@joyzl/eno",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Easy Node Object",
 	"main": "index.js",
 	"scripts": {

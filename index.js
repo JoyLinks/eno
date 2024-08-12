@@ -13,7 +13,6 @@ export default {
 
 	show,
 	hide,
-	stack,
 	toggle,
 
 	gets,
@@ -21,10 +20,6 @@ export default {
 	entity,
 	action,
 	element,
-
-	date,
-	time,
-	datetime
 }
 
 /**
@@ -46,6 +41,7 @@ function show(element) {
 		}
 	}
 }
+
 /**
  * 隐藏单个/多个元素
  * @param {Element} element
@@ -65,36 +61,37 @@ function hide(element) {
 		}
 	}
 }
+
 /**
- * 切换指定元素显示，其余元素隐藏
- * @param {Object} parent 父级
- * @param {Object} element 当前元素
+ * 切换指定元素显示，其余元素隐藏；
+ * 如果指定样式类名，则当前原始添加样式类，其余元素移除样式类
+ * @param {Element} parent 父级
+ * @param {Element} element 当前元素
  * @param {String} className 类名称
  */
 function toggle(parent, element, className) {
+	if (parent && parent.trim) {
+		parent = select(parent);
+	}
+	if (element && element.trim) {
+		element = select(parent, element);
+
+		if (element.parentElement != parent) {
+			parent.appendChild(element);
+		}
+	}
+
 	if (arguments.length == 1) {
 		// toggle(element);
-		element = parent;
-		if (element.trim) {
-			element = select(element);
-		}
-		if (element.hidden) {
-			element.hidden = false;
+		if (parent.hidden) {
+			parent.hidden = false;
 		} else {
-			element.hidden = true;
+			parent.hidden = true;
 		}
 	} else
 	if (arguments.length == 2) {
 		// toggle(parent,element);
-		if (parent.trim) {
-			parent = select(parent);
-		}
-		if (element.trim) {
-			element = select(element);
-		}
-		if (element.parentElement != parent) {
-			parent.appendChild(element);
-		}
+		// display:flex 导致 hidden 属性失效而不会隐藏
 		for (let i = 0; i < parent.children.length; i++) {
 			if (element == parent.children[i]) {
 				parent.children[i].hidden = false;
@@ -105,15 +102,14 @@ function toggle(parent, element, className) {
 	} else
 	if (arguments.length == 3) {
 		// toggle(parent,element,className);
-
+		for (let i = 0; i < parent.children.length; i++) {
+			parent.children[i].hidden = false;
+			parent.children[i].classList.remove(className);
+			if (element == parent.children[i]) {
+				parent.children[i].classList.add(className);
+			}
+		}
 	}
-}
-
-function stack(parent, element, className) {
-	// 单选 增加class/移除其它
-	// 多选 增加class
-	// 增加 class
-	// 移除 class
 }
 
 /**
@@ -411,6 +407,7 @@ function gets(element, converter = defaultConverter) {
 		}
 	}
 }
+
 /**
  * 从指定JSON设置元素值，以name属性作为标识
  * @param {Element} element 元素
@@ -572,6 +569,7 @@ function sets(element, parameter, converter = defaultConverter) {
 		}
 	}
 }
+
 /**
  * 获取元素值
  * <input name="AAA" value="123"/>
@@ -601,6 +599,7 @@ function get(element, parameter, converter) {
 		}
 	}
 }
+
 /**
  * 设置元素值
  * <input name="AAA" value="123"/>
@@ -630,6 +629,7 @@ function set(element, parameter, converter) {
 		}
 	}
 }
+
 /**
  * 根据名称获取对象值
  * @param {Object} o 对象
@@ -657,6 +657,7 @@ function vale(o, name) {
 	}
 	return o;
 }
+
 /**
  * 根据名称设置对象值
  * @param {Object} o
@@ -678,6 +679,7 @@ function valu(o, name, value) {
 	o[name[i]] = value;
 	return o;
 }
+
 /**
  * 转换为字符串值
  * @param {Object} o
@@ -692,6 +694,7 @@ function text(o) {
 	}
 	return "";
 }
+
 /**
  * 根据事件或元素获取由sets关联的实体对象
  */
@@ -722,6 +725,7 @@ function entity(e, selector) {
 	}
 	return null;
 }
+
 /**
  * 根据事件或元素获取属性指定的动作
  * @param {Event} e
@@ -744,6 +748,7 @@ function action(e, a) {
 	}
 	return false;
 }
+
 /**
  * 根据事件获取绑定实体的元素
  * @param {Event} e
@@ -764,39 +769,4 @@ function element(e) {
 		}
 	}
 	return null;
-}
-
-/**
- * 2024-6-24
- */
-function date() {
-	const now = new Date();
-	const year = now.getFullYear();
-	const month = (now.getMonth() + 1 /*月份从0开始，需要加1*/ ).toString().padStart(2, '0');
-	const day = (now.getDate()).toString().padStart(2, '0');
-	return `${year}-${month}-${day}`;
-}
-
-/**
- * 10:28:12
- */
-function time() {
-	const now = new Date();
-	const hours = now.getHours();
-	const minutes = now.getMinutes();
-	const seconds = now.getSeconds();
-	return `${hours}:${minutes}:${seconds}`;
-}
-/**
- * 2024-6-24 10:28:12
- */
-function datetime() {
-	const now = new Date();
-	const year = now.getFullYear();
-	const month = now.getMonth() + 1 /*月份从0开始，需要加1*/ ;
-	const day = now.getDate();
-	const hours = now.getHours();
-	const minutes = now.getMinutes();
-	const seconds = now.getSeconds();
-	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
