@@ -118,7 +118,7 @@ function replace(element, html) {
 			if (element.style.cssText) {
 				html.style.cssText += element.style.cssText;
 			}
-			element.parentElement.replaceChild(element, html);
+			element.parentElement.replaceChild(html, element);
 		}
 	}
 	return html;
