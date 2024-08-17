@@ -61,6 +61,7 @@ function create(html) {
 function append(element, html) {
 	if (arguments.length == 1) {
 		// append(html);
+		html = element;
 		element = document.body;
 	} else
 	if (arguments.length == 2) {
@@ -72,7 +73,7 @@ function append(element, html) {
 	if (html.trim) {
 		html = create(html);
 	}
-	if (html.length) {
+	if (Array.isArray(html)) {
 		for (let i = 0; i < html.length; i++) {
 			element.appendChild(html[i]);
 		}
@@ -98,7 +99,7 @@ function replace(element, html) {
 		html = create(html);
 	}
 	if (element.parentElement) {
-		if (html.length) {
+		if (Array.isArray(html)) {
 			let item;
 			for (let i = 0; i < html.length; i++) {
 				item = html[i];
@@ -152,6 +153,9 @@ function select(element, selector) {
 		// select(element, selector);
 		if (element.trim) {
 			element = document.querySelectorAll(element);
+			if (element.length == 0) {
+				return null;
+			}
 		} else
 		if (element.nodeType) {
 			element = element.querySelectorAll(selector);
@@ -162,23 +166,27 @@ function select(element, selector) {
 				return element[0];
 			}
 			return Array.from(element);
-		}
-		if (element.length) {
-			let nodes, items = new Array();
-			for (let i = 0; i < element.length; i++) {
-				nodes = element[i].querySelectorAll(selector);
-				for (let n = 0; n < nodes.length; n++) {
-					items.push(nodes[n]);
-				}
-			}
-			if (items.length == 0) {
+		} else
+		if (Array.isArray(element)) {
+			if (element.length == 0) {
 				return null;
 			}
-			if (items.length == 1) {
-				return items[0];
-			}
-			return items;
 		}
+		// element[]
+		let nodes, items = new Array();
+		for (let i = 0; i < element.length; i++) {
+			nodes = element[i].querySelectorAll(selector);
+			for (let n = 0; n < nodes.length; n++) {
+				items.push(nodes[n]);
+			}
+		}
+		if (items.length == 0) {
+			return null;
+		}
+		if (items.length == 1) {
+			return items[0];
+		}
+		return items;
 	}
 }
 
@@ -198,7 +206,7 @@ function remove(element, selector) {
 		return;
 	}
 	if (element) {
-		if (element.length) {
+		if (Array.isArray(element)) {
 			for (let i = 0; i < element.length; i++) {
 				element[i].remove();
 			}
@@ -225,7 +233,7 @@ function hide(element, selector) {
 		return;
 	}
 	if (element) {
-		if (element.length) {
+		if (Array.isArray(element)) {
 			for (let i = 0; i < element.length; i++) {
 				element[i].hidden = true;
 				element[i].__DISPLAY = element[i].style.display
@@ -233,7 +241,7 @@ function hide(element, selector) {
 			}
 		} else {
 			element.hidden = true;
-			element.__DISPLAY = element[i].style.display
+			element.__DISPLAY = element.style.display
 			// display:flex 导致 hidden 属性失效而不会隐藏
 			element.style.display = "none";
 		}
@@ -257,7 +265,7 @@ function show(element, selector) {
 		return;
 	}
 	if (element) {
-		if (element.length) {
+		if (Array.isArray(element)) {
 			for (let i = 0; i < element.length; i++) {
 				element[i].hidden = false;
 				element[i].style.display = element[i].__DISPLAY;
@@ -348,7 +356,7 @@ function gets(element, selector, converter = defaultConverter) {
 		return;
 	}
 	if (element) {
-		if (element.length) {
+		if (Array.isArray(element)) {
 			let parameter = {},
 				parameters = new Array();
 			for (let i = 0; i < element.length; i++) {
@@ -668,18 +676,18 @@ function text(o) {
 function bind(element, selector, eventName, listener) {
 	if (arguments.length == 3) {
 		// bind(element,eventName,listener);
-		element = selects(element);
+		element = select(element);
 		listener = eventName;
 		eventName = selector;
 	} else
 	if (arguments.length == 4) {
 		// bind(element,selector,eventName,listener);
-		element = selects(element, selector);
+		element = select(element, selector);
 	} else {
 		return;
 	}
 	if (element) {
-		if (element.length) {
+		if (Array.isArray(element)) {
 			for (let i = 0; i < element.length; i++) {
 				element[i].addEventListener(eventName, listener);
 			}
