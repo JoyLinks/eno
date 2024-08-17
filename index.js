@@ -1,15 +1,13 @@
 // HTML5 Node Element
 // Easy Node Object
-// 提供HTML标签与数据对象之间的互操作支持。
+// 提供HTML标签元素处理与数据对象之间的互操作支持。
 
 export default {
 	create,
-	remove,
-
+	append,
+	replace,
 	select,
-	selects,
-	query,
-	on,
+	remove,
 
 	show,
 	hide,
@@ -17,257 +15,24 @@ export default {
 
 	gets,
 	sets,
+
+	bind,
 	entity,
 	action,
 	element,
-}
 
-/**
- * 显示单个/多个元素
- * @param {Element} element
- */
-function show(element) {
-	if (element) {
-		if (element.trim) {
-			show(selects(element));
-		} else
-		if (element.length) {
-			for (let i = 0; i < element.length; i++) {
-				show(element[i]);
-			}
-		} else
-		if (element.nodeType) {
-			element.hidden = false;
-		}
-	}
-}
-
-/**
- * 隐藏单个/多个元素
- * @param {Element} element
- */
-function hide(element) {
-	if (element) {
-		if (element.trim) {
-			hide(selects(element));
-		} else
-		if (element.length) {
-			for (let i = 0; i < element.length; i++) {
-				hide(element[i]);
-			}
-		} else
-		if (element.nodeType) {
-			element.hidden = true;
-		}
-	}
-}
-
-/**
- * 切换指定元素显示，其余元素隐藏；
- * 如果指定样式类名，则当前原始添加样式类，其余元素移除样式类
- * @param {Element} parent 父级
- * @param {Element} element 当前元素
- * @param {String} className 类名称
- */
-function toggle(parent, element, className) {
-	if (parent && parent.trim) {
-		parent = select(parent);
-	}
-	if (element && element.trim) {
-		element = select(parent, element);
-
-		if (element.parentElement != parent) {
-			parent.appendChild(element);
-		}
-	}
-
-	if (arguments.length == 1) {
-		// toggle(element);
-		if (parent.hidden) {
-			parent.hidden = false;
-		} else {
-			parent.hidden = true;
-		}
-	} else
-	if (arguments.length == 2) {
-		// toggle(parent,element);
-		// display:flex 导致 hidden 属性失效而不会隐藏
-		for (let i = 0; i < parent.children.length; i++) {
-			if (element == parent.children[i]) {
-				parent.children[i].hidden = false;
-			} else {
-				parent.children[i].hidden = true;
-			}
-		}
-	} else
-	if (arguments.length == 3) {
-		// toggle(parent,element,className);
-		for (let i = 0; i < parent.children.length; i++) {
-			parent.children[i].hidden = false;
-			parent.children[i].classList.remove(className);
-			if (element == parent.children[i]) {
-				parent.children[i].classList.add(className);
-			}
-		}
-	}
-}
-
-/**
- * 在指定元素内/整个文档查找标签
- * @param {Element} element 元素内
- * @param {String} selector 选择器
- */
-function select(element, selector) {
-	// 仅指定1个参数
-	if (arguments.length == 1) {
-		// select(selector);
-		selector = element;
-		return document.querySelector(selector);
-	}
-	// 指定了2个参数
-	if (arguments.length >= 2) {
-		// select(element, selector);
-		if (element) {
-			if (element.trim) {
-				element = document.querySelectorAll(element);
-			}
-			if (element.nodeType) {
-				return element.querySelector(selector);
-			} else
-			if (Array.isArray(element)) {
-				let node;
-				for (let i = 0; i < elements.length; i++) {
-					node = elements[i].querySelector(selector);
-					if (node) {
-						return node;
-					}
-				}
-			}
-			return null;
-		} else {
-			return document.querySelector(selector);
-		}
-	}
-}
-
-/**
- * 在指定元素内/整个文档查找标签
- * @param {Element} element 元素内
- * @param {String} selector 选择器
- * @returns {NodeList} 元素集合/空集合
- */
-function selects(element, selector) {
-	// 仅指定1个参数
-	if (arguments.length == 1) {
-		// select(selector);
-		selector = element;
-		return document.querySelectorAll(selector);
-	}
-	// 指定了2个参数
-	if (arguments.length >= 2) {
-		// select(element, selector);
-		let nodes, items = new Array();
-		if (element.trim) {
-			element = document.querySelectorAll(element);
-		}
-		if (Array.isArray(element)) {
-			for (let i = 0; i < element.length; i++) {
-				nodes = element[i].querySelectorAll(selector);
-				if (nodes && nodes.length) {
-					for (let i = 0; i < nodes.length; ++i) {
-						items.push(nodes[i]);
-					}
-				}
-			}
-		} else {
-			nodes = element.querySelectorAll(selector);
-			if (nodes && nodes.length) {
-				for (let i = 0; i < nodes.length; ++i) {
-					items.push(nodes[i]);
-				}
-			}
-		}
-		return items;
-	}
-}
-
-/**
- * 绑定事件
- * @param {Element} element
- * @param {String} selector
- * @param {String} evt
- * @param {Function} listener
- */
-function on(element, selector, evt, listener) {
-	if (arguments.length == 3) {
-		// on(element/selector, evt, listener);
-		listener = evt;
-		evt = selector;
-		if (element.trim) {
-			element = selects(element);
-		}
-	} else
-	if (arguments.length == 4) {
-		// on(element, selector, evt, listener);
-		element = selects(element, selector);
-	} else {
-		return;
-	}
-
-	if (Array.isArray(element)) {
-		for (let i = 0; i < element.length; i++) {
-			element[i].addEventListener(evt, listener);
-		}
-	} else {
-		element.addEventListener(evt, listener);
-	}
+	query
 }
 
 // 这个临时标签用于解析HTML字符串
 const TEMP = document.createElement("div");
 
 /**
- * 字符串创建HTML元素；
- * A仅创建；
- * B创建并添加到末尾：append；
- * C创建并替换已有元素：replace；
- * @param {String} parent
- * @param {String} html 字符串形式的HTML内容
- * @param {String} place append/replace
- * @return {Element} 单个/多个元素
+ * HTML字符串创建标签元素实例
+ * @param {String} html HTML字符串
+ * @return {Element} 创建的单个/多个标签元素
  */
-function create(parent, html, place) {
-	if (arguments.length == 0) {
-		// create();
-		return null;
-	} else
-	if (arguments.length == 1) {
-		// create(html);
-		html = parent;
-		parent = null;
-	} else
-	if (arguments.length == 2) {
-		// create(parent,html);
-		place = 'append';
-		if (parent) {
-			if (parent.nodeType) {} else {
-				parent = select(parent);
-			}
-		} else {
-			parent = document.body;
-		}
-	} else
-	if (arguments.length == 3) {
-		// create(parent,html,place);
-		if (parent) {
-			if (parent.nodeType) {} else {
-				parent = select(parent);
-			}
-		} else {
-			parent = document.body;
-		}
-	}
-
+function create(html) {
 	// 创建元素
 	TEMP.innerHTML = html;
 	let element;
@@ -277,102 +42,278 @@ function create(parent, html, place) {
 	} else
 	if (TEMP.childElementCount > 1) {
 		element = new Array();
-		for (let i = 0; i < TEMP.childElementCount; ++i) {
-			element.push(TEMP.children[i]);
-			TEMP.children[i].remove();
+		do {
+			element.push(TEMP.children[0]);
+			TEMP.children[0].remove();
+		} while (TEMP.childElementCount > 0);
+	}
+	return element;
+
+	// DocumentFragment
+}
+
+/**
+ * 创建并添加标签元素
+ * @param {Element} element 标签元素
+ * @param {String} html HTML字符串
+ * @return {Element} 创建的单个/多个标签元素
+ */
+function append(element, html) {
+	if (arguments.length == 1) {
+		// append(html);
+		element = document.body;
+	} else
+	if (arguments.length == 2) {
+		// append(element,html);
+		element = select(element);
+	} else {
+		return;
+	}
+	if (html.trim) {
+		html = create(html);
+	}
+	if (html.length) {
+		for (let i = 0; i < html.length; i++) {
+			element.appendChild(html[i]);
 		}
 	} else {
-		return null;
+		element.appendChild(html);
 	}
+	return html;
+}
 
-	// 添加元素到文档
-	if (parent) {
-		if ("append" === place) {
-			if (element.length) {
-				for (let i = 0; i < element.length; i++) {
-					parent.appendChild(element[i]);
+/**
+ * 创建并替换为标签元素
+ * @param {Element} element 标签元素
+ * @param {String} html HTML字符串
+ * @return {Element} 创建的单个/多个标签元素
+ */
+function replace(element, html) {
+	if (arguments.length == 2) {
+		element = select(element);
+	} else {
+		return;
+	}
+	if (html.trim) {
+		html = create(html);
+	}
+	if (element.parentElement) {
+		if (html.length) {
+			let item;
+			for (let i = 0; i < html.length; i++) {
+				item = html[i];
+				if (element.className) {
+					item.className += element.className;
 				}
-			} else {
-				parent.appendChild(element);
+				if (element.style.cssText) {
+					item.style.cssText += element.style.cssText;
+				}
 			}
+			element.replaceWith(html);
+		} else {
+			if (element.className) {
+				html.className += element.className;
+			}
+			if (element.style.cssText) {
+				html.style.cssText += element.style.cssText;
+			}
+			element.parentElement.replaceChild(element, html);
+		}
+	}
+	return html;
+}
+
+/**
+ * 在指定范围内/整个文档查找
+ * @param {Element} element 标签元素
+ * @param {String} selector 筛选字符
+ * @return {Element} 匹配的单个/多个标签元素
+ */
+function select(element, selector) {
+	if (arguments.length == 1) {
+		// 仅指定1个参数
+		// select(element/selector);
+		if (element.trim) {
+			element = document.querySelectorAll(element);
+			if (element.length == 0) {
+				return null;
+			}
+			if (element.length == 1) {
+				return element[0];
+			}
+			return Array.from(element);
 		} else
-		if ("replace" === place) {
-			if (parent.parentElement) {
-				if (element.length) {
-					// 待验证
-					parent.parentElement.replaceWith(element);
-				} else {
-					parent.parentElement.replaceChild(parent, element);
+		if (element.nodeType) {
+			return element;
+		}
+	} else
+	if (arguments.length == 2) {
+		// 指定了2个参数
+		// select(element, selector);
+		if (element.trim) {
+			element = document.querySelectorAll(element);
+		} else
+		if (element.nodeType) {
+			element = element.querySelectorAll(selector);
+			if (element.length == 0) {
+				return null;
+			}
+			if (element.length == 1) {
+				return element[0];
+			}
+			return Array.from(element);
+		}
+		if (element.length) {
+			let nodes, items = new Array();
+			for (let i = 0; i < element.length; i++) {
+				nodes = element[i].querySelectorAll(selector);
+				for (let n = 0; n < nodes.length; n++) {
+					items.push(nodes[n]);
 				}
+			}
+			if (items.length == 0) {
+				return null;
+			}
+			if (items.length == 1) {
+				return items[0];
+			}
+			return items;
+		}
+	}
+}
+
+/**
+ * 从文档移除
+ * @param {Element} element 标签元素
+ * @param {String} selector 筛选字符
+ * @return {Element} 移除的单个/多个标签元素
+ */
+function remove(element, selector) {
+	if (arguments.length == 1) {
+		element = select(element);
+	} else
+	if (arguments.length == 2) {
+		element = select(element, selector);
+	} else {
+		return;
+	}
+	if (element) {
+		if (element.length) {
+			for (let i = 0; i < element.length; i++) {
+				element[i].remove();
 			}
 		} else {
-			console.error("eno.create 不明确的参数" + place);
+			element.remove();
 		}
 	}
 	return element;
 }
 
 /**
- * 从文档移除一个或多个元素
- * @param {Element} element 元素/元素数组
+ * 隐藏单个/多个元素
+ * @param {Element} element 标签元素
+ * @param {String} selector 筛选字符
+ * @return {Element} 隐藏的单个/多个标签元素
  */
-function remove(element) {
+function hide(element, selector) {
+	if (arguments.length == 1) {
+		element = select(element);
+	} else
+	if (arguments.length == 2) {
+		element = select(element, selector);
+	} else {
+		return;
+	}
 	if (element) {
-		if (element.trim) {
-			// remove("p");
-			element = selects(element);
-		}
-		if (element.tagName) {
-			// remove(document.getElementById("test"));
-			element.remove();
-		} else
 		if (element.length) {
-			// remove(["p","span"]);
-			// remove(document.getElementByTagName("div"));
 			for (let i = 0; i < element.length; i++) {
-				remove(element[i]);
+				element[i].hidden = true;
+				element[i].__DISPLAY = element[i].style.display
+				element[i].style.display = "none";
 			}
+		} else {
+			element.hidden = true;
+			element.__DISPLAY = element[i].style.display
+			// display:flex 导致 hidden 属性失效而不会隐藏
+			element.style.display = "none";
 		}
 	}
+	return element;
 }
 
 /**
- * 读取 URL 中的 Query String 参数值
- * @param {String} name 参数名
+ * 显示单个/多个元素
+ * @param {Element} element 标签元素
+ * @param {String} selector 筛选字符
+ * @return {Element} 显示的单个/多个标签元素
  */
-function query(url, name) {
+function show(element, selector) {
 	if (arguments.length == 1) {
-		// getQueryString(name)
-		name = url;
-		// window.location.search 返回从问号?开始的URL查询部分
-		// ?name1=value1&name2=value2
-		url = window.location.search;
-	}
+		element = select(element);
+	} else
 	if (arguments.length == 2) {
-		// getQueryString(url, name)
-		let index = url.indexof("?");
-		if (index > 0) {
-			url = url.substring(index);
+		element = select(element, selector);
+	} else {
+		return;
+	}
+	if (element) {
+		if (element.length) {
+			for (let i = 0; i < element.length; i++) {
+				element[i].hidden = false;
+				element[i].style.display = element[i].__DISPLAY;
+			}
 		} else {
-			return null;
+			element.hidden = false;
+			element.style.display = element.__DISPLAY;
 		}
 	}
+	return element;
+}
 
-	if (url) {
-		let start = url.indexOf(name);
-		if (start >= 0) {
-			start += name.length;
-			if (url.charAt(start) == '=') {
-				start++;
-				let end = url.indexOf('&', start);
-				if (end >= 0) {
-					return url.substring(start, end);
+/**
+ * 切换指定元素显示，同级其余元素隐藏；
+ * 如果指定样式类名，则当前原始添加样式类，其余元素移除样式类
+ * @param {Element} element 标签元素
+ * @param {String} selector 筛选字符
+ * @param {String} className 类名称
+ * @return {Element} 显示的单个/多个标签元素
+ */
+function toggle(element, selector, className) {
+	if (arguments.length == 1) {
+		// toggle(element) 
+		element = select(element);
+	} else
+	if (arguments.length == 2) {
+		// toggle(element,selector)
+		// toggle(element,className)
+		element = select(element, selector);
+	} else
+	if (arguments.length == 3) {
+		// toggle(element,selector,className)
+		element = select(element, selector);
+	} else {
+		return;
+	}
+	if (element) {
+		const parent = element.parentElement;
+		if (className) {
+			for (let i = 0; i < parent.children.length; i++) {
+				parent.children[i].classList.remove(className);
+				if (element == parent.children[i]) {
+					parent.children[i].classList.add(className);
 				}
-				return url.substring(start);
+			}
+		} else {
+			for (let i = 0; i < parent.children.length; i++) {
+				if (element == parent.children[i]) {
+					show(parent.children[i]);
+				} else {
+					hide(parent.children[i]);
+				}
 			}
 		}
 	}
-	return null;
+	return element;
 }
 
 // 默认转换函数
@@ -380,16 +321,34 @@ function defaultConverter(element, parameter, name) {}
 
 /**
  * 从指定元素获取值以JSON对象返回{name:value}
- * @param {Element} element 元素
+ * @param {Element} element 标签元素
+ * @param {String} selector 筛选字符
  * @param {Function} converter 转换
- * @returns {Object} {name1:value1,name2:value2,...}
+ * @return {Object} {name1:value1,name2:value2,...}
  */
-function gets(element, converter = defaultConverter) {
-	if (element) {
-		if (element.trim) {
-			element = selects(element);
+function gets(element, selector, converter = defaultConverter) {
+	if (arguments.length == 1) {
+		// gets(element)
+		element = select(element);
+	} else
+	if (arguments.length == 2) {
+		// gets(element,selector)
+		// gets(element,converter)
+		if (selector.trim) {
+			element = select(element, selector);
+		} else {
+			element = select(element);
+			converter = selector;
 		}
-		if (Array.isArray(element)) {
+	} else
+	if (arguments.length == 3) {
+		// gets(element,selector,converter)
+		element = select(element, selector);
+	} else {
+		return;
+	}
+	if (element) {
+		if (element.length) {
 			let parameter = {},
 				parameters = new Array();
 			for (let i = 0; i < element.length; i++) {
@@ -409,38 +368,39 @@ function gets(element, converter = defaultConverter) {
 }
 
 /**
- * 从指定JSON设置元素值，以name属性作为标识
- * @param {Element} element 元素
- * @param {Object} parameter 对象
- * @param {Function} converter 转换
- * @returns {Element} element
+ * 从指定JSON对象设置元素值，以name属性作为标识
+ * @param {Element} element 标签元素
+ * @param {String} selector 筛选字符
+ * @param {Object} parameter 数据对象
+ * @param {Function} converter 数据转换
+ * @return {Element} 设置的单个/多个标签元素
  */
-function sets(element, parameter, converter = defaultConverter) {
-	if (element) {
-		if (element.trim) {
-			// 元素选择字符串
-			element = selects(element);
-			if (element.length == 0) {
-				return null;
-			} else
-			if (element.length == 1) {
-				element = element[0];
-			} else {
-				// 多个匹配元素
-			}
+function sets(element, selector, parameter, converter = defaultConverter) {
+	if (arguments.length == 2) {
+		// sets(element,parameter)
+		element = select(element);
+		parameter = selector;
+	} else
+	if (arguments.length == 3) {
+		// sets(element,selector,parameter)
+		// sets(element,parameter,converter)
+		if (selector.trim) {
+			element = select(element, selector);
+		} else {
+			element = select(element);
+			converter = parameter;
+			parameter = selector;
 		}
-
+	} else
+	if (arguments.length == 4) {
+		// sets(element,selector,parameter,converter)
+		element = select(element, selector);
+	} else {
+		return;
+	}
+	if (element) {
 		if (parameter) {
 			if (Array.isArray(parameter)) {
-				// if (element.nodeType) {
-				// 	if (element.childElementCount) {
-				// 		element = element.children;
-				// 	} else {
-				// 		// ???
-				// 		return null;
-				// 	}
-				// }
-
 				let i = 0;
 				// 利用ENO_SET记录并判定是否首次
 				if (element.ENO_SETS) {
@@ -696,7 +656,46 @@ function text(o) {
 }
 
 /**
+ * 绑定事件
+ * @param {Element} element 标签元素
+ * @param {String} selector 筛选字符
+ * @param {String} eventName 事件名称
+ * @param {Function} listener 事件处理
+ * @example bind(element,eventName,listener);
+ * @example bind(element,selector,eventName,listener);
+ * @return {Element} 绑定事件的标签元素
+ */
+function bind(element, selector, eventName, listener) {
+	if (arguments.length == 3) {
+		// bind(element,eventName,listener);
+		element = selects(element);
+		listener = eventName;
+		eventName = selector;
+	} else
+	if (arguments.length == 4) {
+		// bind(element,selector,eventName,listener);
+		element = selects(element, selector);
+	} else {
+		return;
+	}
+	if (element) {
+		if (element.length) {
+			for (let i = 0; i < element.length; i++) {
+				element[i].addEventListener(eventName, listener);
+			}
+		} else {
+			element.addEventListener(eventName, listener);
+		}
+	}
+	return element;
+}
+
+/**
  * 根据事件或元素获取由sets关联的实体对象
+ * @example entity(event);
+ * @example entity(element);
+ * @example entity(element,selector);
+ * @return {Object} 标签元素关联的数据对象
  */
 function entity(e, selector) {
 	if (arguments.length == 1) {
@@ -752,6 +751,7 @@ function action(e, a) {
 /**
  * 根据事件获取绑定实体的元素
  * @param {Event} e
+ * @return {Element} 标签元素关联的数据对象
  */
 function element(e) {
 	if (e && e.target) {
@@ -766,6 +766,46 @@ function element(e) {
 			return e;
 		} else {
 			e = e.parentElement;
+		}
+	}
+	return null;
+}
+
+/**
+ * 读取 URL 中的 Query String 参数值
+ * @param {String} name 参数名
+ * @return {String} 参数值
+ */
+function query(url, name) {
+	if (arguments.length == 1) {
+		// getQueryString(name)
+		name = url;
+		// window.location.search 返回从问号?开始的URL查询部分
+		// ?name1=value1&name2=value2
+		url = window.location.search;
+	}
+	if (arguments.length == 2) {
+		// getQueryString(url, name)
+		let index = url.indexof("?");
+		if (index > 0) {
+			url = url.substring(index);
+		} else {
+			return null;
+		}
+	}
+
+	if (url) {
+		let start = url.indexOf(name);
+		if (start >= 0) {
+			start += name.length;
+			if (url.charAt(start) == '=') {
+				start++;
+				let end = url.indexOf('&', start);
+				if (end >= 0) {
+					return url.substring(start, end);
+				}
+				return url.substring(start);
+			}
 		}
 	}
 	return null;
