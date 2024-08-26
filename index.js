@@ -68,19 +68,22 @@ function append(element, html) {
 		// append(element,html);
 		element = select(element);
 	} else {
-		return;
+		return null;
 	}
-	if (html.trim) {
-		html = create(html);
-	}
-	if (Array.isArray(html)) {
-		for (let i = 0; i < html.length; i++) {
-			element.appendChild(html[i]);
+	if (element) {
+		if (html.trim) {
+			html = create(html);
 		}
-	} else {
-		element.appendChild(html);
+		if (Array.isArray(html)) {
+			for (let i = 0; i < html.length; i++) {
+				element.appendChild(html[i]);
+			}
+		} else {
+			element.appendChild(html);
+		}
+		return html;
 	}
-	return html;
+	return null;
 }
 
 /**
@@ -93,35 +96,38 @@ function replace(element, html) {
 	if (arguments.length == 2) {
 		element = select(element);
 	} else {
-		return;
+		return null;
 	}
-	if (html.trim) {
-		html = create(html);
-	}
-	if (element.parentElement) {
-		if (Array.isArray(html)) {
-			let item;
-			for (let i = 0; i < html.length; i++) {
-				item = html[i];
+	if (element) {
+		if (html.trim) {
+			html = create(html);
+		}
+		if (element.parentElement) {
+			if (Array.isArray(html)) {
+				let item;
+				for (let i = 0; i < html.length; i++) {
+					item = html[i];
+					if (element.className) {
+						item.className += " " + element.className;
+					}
+					if (element.style.cssText) {
+						item.style.cssText += element.style.cssText;
+					}
+				}
+				element.replaceWith(html);
+			} else {
 				if (element.className) {
-					item.className += element.className;
+					html.className += " " + element.className;
 				}
 				if (element.style.cssText) {
-					item.style.cssText += element.style.cssText;
+					html.style.cssText += element.style.cssText;
 				}
+				element.parentElement.replaceChild(html, element);
 			}
-			element.replaceWith(html);
-		} else {
-			if (element.className) {
-				html.className += element.className;
-			}
-			if (element.style.cssText) {
-				html.style.cssText += element.style.cssText;
-			}
-			element.parentElement.replaceChild(html, element);
 		}
+		return html;
 	}
-	return html;
+	return null;
 }
 
 /**
@@ -234,16 +240,22 @@ function hide(element, selector) {
 	}
 	if (element) {
 		if (Array.isArray(element)) {
+			let e;
 			for (let i = 0; i < element.length; i++) {
-				element[i].hidden = true;
-				element[i].__DISPLAY = element[i].style.display
-				element[i].style.display = "none";
+				e = element[i];
+				if (e.hidden) {} else {
+					e.hidden = true;
+					e.__DISPLAY = e.style.display
+					e.style.display = "none";
+				}
 			}
 		} else {
-			element.hidden = true;
-			element.__DISPLAY = element.style.display
-			// display:flex 导致 hidden 属性失效而不会隐藏
-			element.style.display = "none";
+			if (element.hidden) {} else {
+				element.hidden = true;
+				element.__DISPLAY = element.style.display;
+				// display:flex 导致 hidden 属性失效而不会隐藏
+				element.style.display = "none";
+			}
 		}
 	}
 	return element;
@@ -266,11 +278,16 @@ function show(element, selector) {
 	}
 	if (element) {
 		if (Array.isArray(element)) {
+			let e;
 			for (let i = 0; i < element.length; i++) {
-				element[i].hidden = false;
-				element[i].style.display = element[i].__DISPLAY;
+				e = element[i];
+				if (e.hidden) {
+					e.hidden = false;
+					e.style.display = e.__DISPLAY;
+				}
 			}
-		} else {
+		} else
+		if (element.hidden) {
 			element.hidden = false;
 			element.style.display = element.__DISPLAY;
 		}
@@ -283,32 +300,41 @@ function show(element, selector) {
  * 如果指定样式类名，则当前原始添加样式类，其余元素移除样式类
  * @param {Element} element 标签元素
  * @param {String} selector 筛选字符
- * @param {String} className 类名称
+ * @param {String} applyClass 添加类名称，必须同时提供otherClass参数
+ * @param {String} otherClass 移除类名称，必须同时提供applyClass参数
  * @return {Element} 显示的单个/多个标签元素
  */
-function toggle(element, selector, className) {
+function toggle(element, selector, applyClass, otherClass) {
 	if (arguments.length == 1) {
-		// toggle(element) 
+		// toggle(element)
 		element = select(element);
 	} else
 	if (arguments.length == 2) {
 		// toggle(element,selector)
-		// toggle(element,className)
 		element = select(element, selector);
 	} else
 	if (arguments.length == 3) {
-		// toggle(element,selector,className)
+		// toggle(element,applyClass,otherClass)
+		element = select(element);
+		otherClass = applyClass;
+		applyClass = selector;
+	} else
+	if (arguments.length == 4) {
+		// toggle(element,selector,applyClass,otherClass)
 		element = select(element, selector);
 	} else {
 		return;
 	}
 	if (element) {
 		const parent = element.parentElement;
-		if (className) {
+		if (applyClass) {
 			for (let i = 0; i < parent.children.length; i++) {
-				parent.children[i].classList.remove(className);
 				if (element == parent.children[i]) {
-					parent.children[i].classList.add(className);
+					parent.children[i].classList.remove(otherClass);
+					parent.children[i].classList.add(applyClass);
+				} else {
+					parent.children[i].classList.remove(applyClass);
+					parent.children[i].classList.add(otherClass);
 				}
 			}
 		} else {
@@ -409,71 +435,71 @@ function sets(element, selector, parameter, converter = defaultConverter) {
 	if (element) {
 		if (parameter) {
 			if (Array.isArray(parameter)) {
+				// Object[] -> Element.children
 				let i = 0;
 				// 利用ENO_SET记录并判定是否首次
-				if (element.ENO_SETS) {
-					element.ENO_SETS = element.ENO_SETS + 1;
-				} else {
-					element.ENO_SETS = 1;
-					// ...<template>...
-					for (; i < element.children.length; i++) {
-						// 只有<template>模板具有content属性
+				if (element.__ENO_SETS) {} else {
+					element.__ENO_SETS = {};
+					// before...<template>...after
+					// 只有<template>模板具有content属性
+					// 记录模板前后已有标签元素数量
+					// before数量包括模板本身
+					for (; i < element.childElementCount; i++) {
 						if (element.children[i].content) {
-							element.template = element.children[i];
-							element.a = ++i;
-							element.b = element.children.length - i;
+							element.__ENO_SETS.template = element.children[i];
+							element.__ENO_SETS.before = ++i;
+							element.__ENO_SETS.after = element.childElementCount - i;
 							break;
 						}
 					}
 				}
 
-				if (element.template) {
+				if (element.__ENO_SETS.template) {
 					// 已定义模板
-					if (parameter.length) { // [a,b]
+					if (parameter.length) {
 						let node, n;
 						// 构造填充元素
 						for (i = 0; i < parameter.length; i++) {
-							if (element.a + i < element.children.length - element.b) {
+							if (element.__ENO_SETS.before + i < element.childElementCount - element.__ENO_SETS.after) {
 								// 重用已有元素
-								for (n = 0; n < element.template.content.childElementCount; n++) {
-									node = element.children[element.a + i + n];
-									node.userData = parameter[i];
+								for (n = 0; n < element.__ENO_SETS.template.content.childElementCount; n++) {
+									node = element.children[element.__ENO_SETS.before + i + n];
 									set(node, parameter[i], converter);
-									node.hidden = false;
+									node.userData = parameter[i];
 								}
 							} else {
 								// 克隆新的元素(DocumentFragment)
-								node = element.template.content.cloneNode(true);
+								// node = element.template.content.cloneNode(true);
+								node = document.importNode(element.__ENO_SETS.template.content, true);
 								for (n = 0; n < node.childElementCount; n++) {
-									node.children.item(n).userData = parameter[i];
 									set(node.children.item(n), parameter[i], converter);
-									node.children.item(n).hidden = false;
+									node.children.item(n).userData = parameter[i];
 								}
-								element.insertBefore(node, element.children[element.a + i * node.childElementCount]);
+								element.insertBefore(node, element.children[element.__ENO_SETS.before + i * node.childElementCount]);
 							}
 						}
 						// 移除多余元素
-						n = i * element.template.content.childElementCount;
-						i = element.a + element.b;
-						while (element.children.length > i + n) {
-							element.children[element.a + n].remove();
+						n = i * element.__ENO_SETS.template.content.childElementCount;
+						i = element.__ENO_SETS.before + element.__ENO_SETS.after;
+						while (element.childElementCount > i + n) {
+							element.children[element.__ENO_SETS.before + n].remove();
 						}
 						return element;
-					} else { // []
+					} else {
 						// 移除多余元素
-						i = element.a + element.b;
-						while (element.length > i) {
-							element[element.a + 1].remove();
+						i = element.__ENO_SETS.before + element.__ENO_SETS.after;
+						while (element.childElementCount > i) {
+							element.children[element.childElementCount - element.__ENO_SETS.after - 1].remove();
 						}
 						return element;
 					}
 				} else {
 					// 未使用模板
-					if (parameter.length) { // [a,b]
+					if (parameter.length) {
 						let node;
 						// 构造填充元素
 						for (i = 0; i < parameter.length; i++) {
-							if (i < element.children.length) {
+							if (i < element.childElementCount) {
 								// 重用已有元素
 								node = element.children[i];
 							} else if (node) {
@@ -481,59 +507,68 @@ function sets(element, selector, parameter, converter = defaultConverter) {
 								node = element.appendChild(node.cloneNode(true));
 							} else {
 								// 干不了
+								// 此情形出现于没有任何子标签元素
 								continue;
 							}
-							node.userData = parameter[i];
 							set(node, parameter[i], converter);
+							node.userData = parameter[i];
 							node.hidden = false;
 						}
 						// 移除多余元素
-						while (element.children.length > i) {
+						while (element.childElementCount > i) {
 							element.children[i].remove();
 						}
 						return element;
-					} else { // []
-						if (element.children.length) {
-							// 保留模板
-							element.children[0].hidden = true;
-							// 移除多余元素
-							while (element.children.length > 1) {
-								element.children[1].remove();
-							}
+					} else {
+						// 移除多余元素，保留模板
+						element.children[0].userData = null;
+						element.children[0].hidden = true;
+						while (element.childElementCount > 1) {
+							element.children[1].remove();
 						}
 						return element;
 					}
 				}
-			} else { // Object
-				if (element.nodeType) {
-					element.userData = parameter;
-					set(element, parameter, converter);
-					return element;
-				}
-				if (element.length) {
-					for (let node, i = 0; i < element.length; i++) {
-						node = element[i];
-						node.userData = parameter;
-						set(node, parameter, converter);
+			} else {
+				// Object -> Element
+				if (Array.isArray(element)) {
+					for (let i = 0; i < element.length; i++) {
+						set(element[i], parameter, converter);
+						element[i].userData = parameter;
 					}
-					return element;
-				}
-			}
-		} else { // null / undefine
-			if (element.nodeType) {
-				element.userData = null;
-				set(element, null, converter);
-				return element;
-			}
-			if (element.length) {
-				// 保留模板
-				element[0].hidden = true;
-				// 移除多余元素
-				while (element.length > 1) {
-					element[1].remove();
+				} else {
+					set(element, parameter, converter);
+					element.userData = parameter;
 				}
 				return element;
 			}
+		} else {
+			// null / undefine -> Element
+			if (element.__ENO_SETS) {
+				if (element.__ENO_SETS.template) {
+					const i = element.__ENO_SETS.before + element.__ENO_SETS.after;
+					while (element.childElementCount > i) {
+						element.children[element.childElementCount - element.__ENO_SETS.after - 1].remove();
+					}
+				} else {
+					element.children[0].userData = null;
+					element.children[0].hidden = true;
+					while (element.childElementCount > 1) {
+						element.children[1].remove();
+					}
+				}
+			} else {
+				if (Array.isArray(element)) {
+					for (let i = 0; i < element.length; i++) {
+						set(element[i], null, converter);
+						element[i].userData = null;
+					}
+				} else {
+					set(element, null, converter);
+					element.userData = null;
+				}
+			}
+			return element;
 		}
 	}
 }
