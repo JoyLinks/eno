@@ -821,15 +821,15 @@ function element(e) {
  */
 function query(url, name) {
 	if (arguments.length == 1) {
-		// getQueryString(name)
+		// query(name)
 		name = url;
 		// window.location.search 返回从问号?开始的URL查询部分
 		// ?name1=value1&name2=value2
 		url = window.location.search;
-	}
+	} else
 	if (arguments.length == 2) {
-		// getQueryString(url, name)
-		let index = url.indexof("?");
+		// query(url, name)
+		let index = url.indexOf("?");
 		if (index > 0) {
 			url = url.substring(index);
 		} else {
