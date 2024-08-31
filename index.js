@@ -363,6 +363,7 @@ function defaultConverter(element, parameter, name) {}
 function gets(element, selector, converter = defaultConverter) {
 	if (arguments.length == 1) {
 		// gets(element)
+		// gets(selector)
 		element = select(element);
 	} else
 	if (arguments.length == 2) {
@@ -412,6 +413,7 @@ function gets(element, selector, converter = defaultConverter) {
 function sets(element, selector, parameter, converter = defaultConverter) {
 	if (arguments.length == 2) {
 		// sets(element,parameter)
+		// sets(selector,parameter)
 		element = select(element);
 		parameter = selector;
 	} else
@@ -769,29 +771,6 @@ function entity(e, selector) {
 }
 
 /**
- * 根据事件或元素获取属性指定的动作
- * @param {Event} e
- * @param {String} a
- */
-function action(e, a) {
-	if (e.target) {
-		e = e.target;
-	} else
-	if (e.srcElement) {
-		e = e.srcElement;
-	}
-
-	while (e) {
-		if (e.hasAttribute(a)) {
-			return true;
-		} else {
-			e = e.parentElement;
-		}
-	}
-	return false;
-}
-
-/**
  * 根据事件获取绑定实体的元素
  * @param {Event} e
  * @return {Element} 标签元素关联的数据对象
@@ -820,12 +799,26 @@ function element(e) {
  * @return {String} 参数值
  */
 function query(url, name) {
-	if (arguments.length == 1) {
-		// query(name)
-		name = url;
+	if (arguments.length == 0) {
+		// query()
 		// window.location.search 返回从问号?开始的URL查询部分
-		// ?name1=value1&name2=value2
 		url = window.location.search;
+	} else
+	if (arguments.length == 1) {
+		// query(url)
+		// query(name)
+		if (url.startsWith("http://") || url.startsWith("https://")) {
+			let index = url.indexOf("?");
+			if (index > 0) {
+				url = url.substring(index);
+			} else {
+				return null;
+			}
+		} else {
+			name = url;
+			// window.location.search 返回从问号?开始的URL查询部分
+			url = window.location.search;
+		}
 	} else
 	if (arguments.length == 2) {
 		// query(url, name)
@@ -838,18 +831,68 @@ function query(url, name) {
 	}
 
 	if (url) {
-		let start = url.indexOf(name);
-		if (start >= 0) {
-			start += name.length;
-			if (url.charAt(start) == '=') {
-				start++;
-				let end = url.indexOf('&', start);
-				if (end >= 0) {
-					return url.substring(start, end);
+		if (name) {
+			let start = url.indexOf(name);
+			if (start >= 0) {
+				start += name.length;
+				if (url.charAt(start) == '=') {
+					start++;
+					let end = url.indexOf('&', start);
+					if (end >= 0) {
+						return url.substring(start, end);
+					}
+					return url.substring(start);
 				}
-				return url.substring(start);
 			}
+		} else {
+			// ?name1=value1&name2=value2
+			let start = 1;
+			let index = 1;
+			let name, parameter = {};
+			while (index >= 0 && index < url.length) {
+				start = url.indexOf("=", index);
+				if (start >= 0) {
+					name = url.substring(start, index);
+					start = ++index;
+
+					index = url.indexOf("&", index);
+					if (index >= 0) {
+						parameter[name] = url.substring(start, index);
+						start = ++index;
+					} else {
+						parameter[name] = url.substring(start);
+						break;
+					}
+				} else {
+					break;
+				}
+			}
+			return parameter;
 		}
 	}
 	return null;
+}
+
+/**
+ * 根据事件或元素获取属性指定的动作
+ * @param {Event} e
+ * @param {String} a
+ * @deprecated 1.1.3
+ */
+function action(e, a) {
+	if (e.target) {
+		e = e.target;
+	} else
+	if (e.srcElement) {
+		e = e.srcElement;
+	}
+
+	while (e) {
+		if (e.hasAttribute(a)) {
+			return true;
+		} else {
+			e = e.parentElement;
+		}
+	}
+	return false;
 }
