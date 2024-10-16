@@ -6,6 +6,7 @@ export default {
 	create,
 	append,
 	replace,
+	selects,
 	select,
 	remove,
 
@@ -134,7 +135,7 @@ function replace(element, html) {
  * 在指定范围内/整个文档查找
  * @param {Element} element 标签元素
  * @param {String} selector 筛选字符
- * @return {Element} 匹配的单个/多个标签元素
+ * @return {Element} 匹配的单个标签元素
  */
 function select(element, selector) {
 	if (arguments.length == 1) {
@@ -193,6 +194,65 @@ function select(element, selector) {
 			return items[0];
 		}
 		return items;
+	}
+}
+
+/**
+ * 在指定范围内/整个文档查找
+ * @param {Element} element 标签元素
+ * @param {String} selector 筛选字符
+ * @return {[Element]} 匹配的多个标签元素
+ */
+function selects(element, selector) {
+	if (arguments.length == 1) {
+		// 仅指定1个参数
+		// selects(element/selector);
+		if (element.trim) {
+			// 仅提供字符串参数
+			element = document.querySelectorAll(element);
+			if (element.length == 0) {
+				return null;
+			}
+			return Array.from(element);
+		} else
+		if (element.nodeType) {
+			// 仅提供元素参数
+			return [element];
+		}
+	} else
+	if (arguments.length == 2) {
+		// 指定了2个参数
+		// select(element, selector);
+		if (element.trim) {
+			element = document.querySelectorAll(element);
+			if (element.length == 0) {
+				return null;
+			}
+		} else
+		if (element.nodeType) {
+			element = element.querySelectorAll(selector);
+			if (element.length == 0) {
+				return null;
+			}
+			return Array.from(element);
+		} else
+		if (Array.isArray(element)) {
+			if (element.length == 0) {
+				return null;
+			}
+			// element[]
+			let nodes, items = new Array();
+			for (let i = 0; i < element.length; i++) {
+				nodes = element[i].querySelectorAll(selector);
+				for (let n = 0; n < nodes.length; n++) {
+					items.push(nodes[n]);
+				}
+			}
+			if (items.length == 0) {
+				return null;
+			}
+			return items;
+		}
 	}
 }
 
@@ -619,7 +679,7 @@ function set(element, parameter, converter) {
 	}
 	name = element.getAttribute("name");
 	if (name && name.length) {
-		if (element.form) {
+		if (element.type) {
 			element.value = text(vale(parameter, name));
 		} else
 		if (element.src) {
