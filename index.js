@@ -649,7 +649,7 @@ function get(element, parameter, converter) {
 	}
 	name = element.getAttribute("name");
 	if (name && name.length) {
-		if (element.form) {
+		if (element.type) {
 			valu(parameter, name, element.value);
 		} else
 		if (element.src) {
