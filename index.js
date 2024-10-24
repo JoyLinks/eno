@@ -305,14 +305,14 @@ function hide(element, selector) {
 				e = element[i];
 				if (e.hidden) {} else {
 					e.hidden = true;
-					e.__DISPLAY = e.style.display
+					e.__ENO_DISPLAY = e.style.display
 					e.style.display = "none";
 				}
 			}
 		} else {
 			if (element.hidden) {} else {
 				element.hidden = true;
-				element.__DISPLAY = element.style.display;
+				element.__ENO_DISPLAY = element.style.display;
 				// display:flex 导致 hidden 属性失效而不会隐藏
 				element.style.display = "none";
 			}
@@ -343,13 +343,13 @@ function show(element, selector) {
 				e = element[i];
 				if (e.hidden) {
 					e.hidden = false;
-					e.style.display = e.__DISPLAY;
+					e.style.display = e.__ENO_DISPLAY;
 				}
 			}
 		} else
 		if (element.hidden) {
 			element.hidden = false;
-			element.style.display = element.__DISPLAY;
+			element.style.display = element.__ENO_DISPLAY;
 		}
 	}
 	return element;
@@ -650,6 +650,7 @@ function get(element, parameter, converter) {
 	name = element.getAttribute("name");
 	if (name && name.length) {
 		if (element.type) {
+			// 所有控件具有type属性
 			valu(parameter, name, element.value);
 		} else
 		if (element.src) {
@@ -680,12 +681,35 @@ function set(element, parameter, converter) {
 	name = element.getAttribute("name");
 	if (name && name.length) {
 		if (element.type) {
+			// 所有控件具有type属性
 			element.value = text(vale(parameter, name));
 		} else
-		if (element.src) {
+		if (element.src !== undefined) {
+			// <img />
+			if (element.__ENO_SRC === undefined) {
+				// 记录默认图像
+				element.__ENO_SRC = element.src;
+			}
 			element.src = text(vale(parameter, name));
+			if (element.src.length == 0) {
+				element.src = element.__ENO_SRC;
+			}
 		} else {
+			if (element.__ENO_TEXT === undefined) {
+				// 原始内容作为默认值
+				element.__ENO_TEXT = element.innerText;
+				// 是否已有title
+				// 如果用于已设置title则不在自动设置
+				element.__ENO_TITLE = element.title ? false : true;
+			}
 			element.innerText = text(vale(parameter, name));
+			if (element.innerText.length == 0) {
+				element.innerText = element.__ENO_TEXT;
+			}
+			if (element.__ENO_TITLE) {
+				// 设置title实现文本提示
+				element.title = element.innerText;
+			}
 		}
 	}
 	if (element.childElementCount) {
