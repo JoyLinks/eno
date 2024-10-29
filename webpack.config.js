@@ -8,6 +8,7 @@ module.exports = {
 		library: {
 			name: 'eno',
 			type: 'umd'
-		}
+		},
+		clean: true
 	}
 };

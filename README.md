@@ -1,5 +1,7 @@
 # eno
-提供HTML标签与数据对象之间的互操作支持。
+易用、简洁、轻量且高效的HTML操作库。
+
+[joyzl eno](http://eno.joyzl.com)
 
 ## 安装
 ``` cmd

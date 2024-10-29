@@ -1,7 +1,5 @@
-// HTML5 Node Element
-// Easy Node Object
 // 提供HTML标签元素处理与数据对象之间的互操作支持。
-// 用于简化 HTMLElement 与 JSON Object 之间的互操作。
+// 用于简化 HTMLElement 与 JS JSON/Object 之间的互操作。
 
 export default {
 	create,
@@ -15,7 +13,9 @@ export default {
 	hide,
 	toggle,
 
+	get,
 	gets,
+	set,
 	sets,
 
 	bind,
@@ -346,9 +346,9 @@ function showElement(element) {
 function toggle(element, selector, applyClass, otherClass) {
 	if (arguments.length == 1) {
 		// toggle(element)
-		element = select(element);
+		element = selects(element);
 		if (element) {
-			toggleElement(element);
+			toggleElements(element);
 			return element;
 		}
 	} else
@@ -364,9 +364,9 @@ function toggle(element, selector, applyClass, otherClass) {
 	if (arguments.length == 3) {
 		// toggle(element,selector,applyClass) 无效
 		// toggle(element,applyClass,otherClass)
-		element = select(element);
+		element = selects(element);
 		if (element) {
-			toggleClass(element, selector, applyClass);
+			toggleClasss(element, selector, applyClass);
 			return element;
 		}
 	} else
@@ -671,7 +671,7 @@ function sets(element, selector, entity, converter = defaultConverter) {
 			}
 		} else {
 			// null / undefine -> Element
-			const i = element.__ENO_SETS.before + element.__ENO_SETS.after;
+			i = element.__ENO_SETS.before + element.__ENO_SETS.after;
 			while (element.childElementCount > i) {
 				element.children[element.childElementCount - element.__ENO_SETS.after - 1].remove();
 			}
