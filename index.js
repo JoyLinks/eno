@@ -20,7 +20,6 @@ export default {
 
 	bind,
 	entity,
-	action,
 	element,
 
 	query
@@ -165,6 +164,7 @@ function select(element, selector) {
 	if (arguments.length == 1) {
 		// 仅指定1个参数
 		// select(element);
+		// select(selector);
 		if (element.tagName) {
 			return element;
 		} else
@@ -497,7 +497,7 @@ function gets(element, selector, converter = defaultConverter) {
 		// gets(element,selector)
 		// gets(element,converter)
 		if (selector instanceof Function) {
-			element = select(element);
+			element = selects(element);
 			converter = selector;
 		} else {
 			element = selects(element, selector);
@@ -560,6 +560,10 @@ function set(element, selector, entity, converter = defaultConverter) {
 
 	if (element) {
 		// Object -> Element
+		if (Array.isArray(entity)) {
+			entity = entity[0];
+		}
+
 		setEntity(element, entity, converter);
 		element.__ENO_ENTITY = entity;
 		return element;
@@ -655,7 +659,7 @@ function sets(element, selector, entity, converter = defaultConverter) {
 					}
 				} else {
 					// 克隆新的元素(DocumentFragment)
-					node = element.fragment.cloneNode(true);
+					node = element.__ENO_SETS.fragment.cloneNode(true);
 					for (n = 0; n < node.childElementCount; n++) {
 						setEntity(node.children[n], entity[i], converter);
 						node.children[n].__ENO_ENTITY = entity[i];
@@ -664,7 +668,7 @@ function sets(element, selector, entity, converter = defaultConverter) {
 				}
 			}
 			// 移除多余元素
-			n = i * element.__ENO_SETS.template.content.childElementCount;
+			n = i * element.__ENO_SETS.fragment.childElementCount;
 			i = element.__ENO_SETS.before + element.__ENO_SETS.after;
 			while (element.childElementCount > i + n) {
 				element.children[element.__ENO_SETS.before + n].remove();
@@ -696,9 +700,22 @@ function getEntity(element, entity, converter) {
 	if (name && name.length) {
 		if (element.type) {
 			// 所有控件具有type属性
+			// 所有控件具有disabled属性
+			// <select> <textarea> 没有checked属性，其余均有
 			if (!element.disabled) {
-				if (element.checked === undefined || element.checked) {
-					setValue(entity, name, element.value);
+				if (element.type === "number" || element.type === "range") {
+					if (!isNaN(element.valueAsNumber)) {
+						setValue(entity, name, element.valueAsNumber);
+					}
+				} else
+				if (element.type === "checkbox" || element.type === "radio") {
+					if (element.checked) {
+						setValue(entity, name, element.value);
+					}
+				} else {
+					if (element.value) {
+						setValue(entity, name, element.value);
+					}
 				}
 			}
 		} else
@@ -732,7 +749,7 @@ function setEntity(element, entity, converter) {
 	if (name && name.length) {
 		if (element.type) {
 			// 所有控件具有type属性
-			if (element.checked === undefined) {
+			if (element.type === "checkbox" || element.type === "radio") {
 				// Radio / Check
 				element.checked = element.value == getValue(entity, name);
 			} else {
