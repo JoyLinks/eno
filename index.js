@@ -88,6 +88,7 @@ function append(element, selector, html) {
 	if (arguments.length == 2) {
 		// append(element,selector); 无效
 		// append(element,html);
+		// append(selector,html);
 		element = select(element);
 		html = create(selector);
 	} else
@@ -118,6 +119,7 @@ function append(element, selector, html) {
 function replace(element, selector, html) {
 	if (arguments.length == 2) {
 		// replace(element,html);
+		// replace(selector,html);
 		element = select(element);
 		html = create(selector);
 	} else
@@ -366,7 +368,7 @@ function toggle(element, selector, applyClass, otherClass) {
 		// toggle(element,applyClass,otherClass)
 		element = selects(element);
 		if (element) {
-			toggleClasss(element, selector, applyClass);
+			toggleClasses(element, selector, applyClass);
 			return element;
 		}
 	} else
@@ -878,6 +880,7 @@ function text(value) {
 function bind(element, selector, eventName, listener) {
 	if (arguments.length == 3) {
 		// bind(element,eventName,listener);
+		// bind(selector,eventName,listener);
 		element = selects(element);
 		listener = eventName;
 		eventName = selector;
@@ -958,6 +961,34 @@ function element(e) {
 			} else {
 				e = e.parentElement;
 			}
+		}
+	}
+	return null;
+}
+
+function target(event, name, value) {
+	if (arguments.length == 1) {
+		// target(event);
+		return event.target || event.srcElement;
+	} else
+	if (arguments.length == 2) {
+		// target(event, name);
+		let element = event.target || event.srcElement;
+		while (element && element !== event.currentTarget) {
+			if (element.hasAttribute(name)) {
+				return element;
+			}
+			element = element.parentElement;
+		}
+	} else
+	if (arguments.length == 3) {
+		// target(event, name, value);
+		let element = event.target || event.srcElement;
+		while (element && element !== event.currentTarget) {
+			if (element.getAttribute(name) == value) {
+				return element;
+			}
+			element = element.parentElement;
 		}
 	}
 	return null;
