@@ -1,7 +1,8 @@
 # eno
-易用、简洁、轻量且高效的HTML操作库。
+简单易用，性能卓越，自由灵活的WEB前端组件
+主要用于 JSON 与 HTML 操作交互的 JavaScript 方法库。
 
-[joyzl eno](http://eno.joyzl.com)
+[joyzl eno](http://eno.joyzl.net)
 
 ## 安装
 ``` cmd
@@ -13,4 +14,4 @@ import eno from '@joyzl/eno';
 ```
 
 ## 使用
-参考在线手册 [joyzl eno doc](http://eno.joyzl.com/document.html)
+参考在线手册 [joyzl eno doc](http://eno.joyzl.net/document.html)

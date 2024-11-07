@@ -21,6 +21,7 @@ export default {
 	bind,
 	entity,
 	element,
+	target,
 
 	query
 }
@@ -966,6 +967,12 @@ function element(e) {
 	return null;
 }
 
+/**
+ * 获取具有指定属性的事件目标
+ * @param {Event} event
+ * @param {String} name
+ * @param {String} value
+ */
 function target(event, name, value) {
 	if (arguments.length == 1) {
 		// target(event);

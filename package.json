@@ -1,6 +1,6 @@
 {
 	"name": "@joyzl/eno",
-	"version": "1.2.1",
+	"version": "1.2.2",
 	"description": "Easy Node Object",
 	"main": "dist/joyzl-eno.js",
 	"module": "index.js",
@@ -24,7 +24,7 @@
 	"bugs": {
 		"url": "https://github.com/JoyLinks/eno/issues"
 	},
-	"homepage": "https://github.com/JoyLinks/eno#readme",
+	"homepage": "http://eno.joyzl.net",
 	"devDependencies": {
 		"webpack": "^5.91.0",
 		"webpack-cli": "^5.1.4"
