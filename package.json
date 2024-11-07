@@ -1,6 +1,6 @@
 {
 	"name": "@joyzl/eno",
-	"version": "1.2.2",
+	"version": "1.2.3",
 	"description": "Easy Node Object",
 	"main": "dist/joyzl-eno.js",
 	"module": "index.js",

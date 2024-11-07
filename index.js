@@ -443,7 +443,11 @@ function toggleClasses(elements, apply, other) {
 }
 
 // 默认转换函数
-function defaultConverter(element, entity, name) {}
+function defaultConverter(element, entity, name) {
+	// return 0; 使用返回值
+	// return null; 不执行默认行为
+	// return; undefined 未处理执行默认行为
+}
 
 /**
  * 从指定元素获取值以实体对象返回
@@ -695,12 +699,19 @@ function sets(element, selector, entity, converter = defaultConverter) {
  * <i case="AAA"></i>
  */
 function getEntity(element, entity, converter) {
-	let name = element.getAttribute("case");
+	let name = element.getAttribute("name");
 	if (name && name.length) {
-		converter(element, entity, name);
-	}
-	name = element.getAttribute("name");
-	if (name && name.length) {
+		let value = converter(element, entity, name);
+		if (value !== undefined) {
+			if (value !== null) {
+				// 返回有效值
+				setValue(entity, name, value);
+			}
+			// 阻止默认处理
+			return;
+		}
+
+		// 默认处理
 		if (element.type) {
 			// 所有控件具有type属性
 			// 所有控件具有disabled属性
@@ -744,20 +755,30 @@ function getEntity(element, entity, converter) {
  * <i case="AAA"></i>
  */
 function setEntity(element, entity, converter) {
-	let name = element.getAttribute("case");
+	let name = element.getAttribute("name");
 	if (name && name.length) {
-		converter(element, entity, name);
-	}
-	name = element.getAttribute("name");
-	if (name && name.length) {
+		let value = converter(element, entity, name);
+		if (value === undefined) {
+			// 无未处理，执行默认处理
+			value = text(getValue(entity, name));
+		} else
+		if (value === null) {
+			// 阻断默认处理行为
+			return;
+		} else {
+			// 返回有效值，执行默认处理
+			value = text(value);
+		}
+
+		// 默认处理
 		if (element.type) {
 			// 所有控件具有type属性
 			if (element.type === "checkbox" || element.type === "radio") {
 				// Radio / Check
-				element.checked = element.value == getValue(entity, name);
+				element.checked = element.value == value;
 			} else {
 				// OTHER
-				element.value = text(getValue(entity, name));
+				element.value = value;
 			}
 		} else
 		if (element.src !== undefined) {
@@ -766,7 +787,7 @@ function setEntity(element, entity, converter) {
 				// 记录默认图像
 				element.__ENO_SRC = element.src;
 			}
-			element.src = text(getValue(entity, name));
+			element.src = value;
 			if (element.src.length == 0) {
 				element.src = element.__ENO_SRC;
 			}
@@ -778,7 +799,7 @@ function setEntity(element, entity, converter) {
 				// 如果用于已设置title则不在自动设置
 				element.__ENO_TITLE = element.title ? false : true;
 			}
-			element.innerText = text(getValue(entity, name));
+			element.innerText = value;
 			if (element.innerText.length == 0) {
 				element.innerText = element.__ENO_TEXT;
 			}
