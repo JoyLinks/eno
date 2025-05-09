@@ -133,20 +133,22 @@ function replace(element, selector, html) {
 	}
 
 	if (element && html) {
-		// 转移属性
-		if (Array.isArray(html)) {
-			for (let i = 0; i < html.length; i++) {
-				// TODO 需要测试验证
-				html[i].classList.add(element.classList);
-				if (element.style.cssText) {
-					html[i].style.cssText += element.style.cssText;
+		// 转移样式属性，如果有
+		if (element.classList && element.classList.length) {
+			if (Array.isArray(html)) {
+				for (let i = 0; i < html.length; i++) {
+					// TODO 需要测试验证
+					html[i].classList.add(element.classList);
+					if (element.style.cssText) {
+						html[i].style.cssText += element.style.cssText;
+					}
 				}
-			}
-		} else {
-			// TODO 需要测试验证
-			html.classList.add(element.classList);
-			if (element.style.cssText) {
-				html.style.cssText += element.style.cssText;
+			} else {
+				// TODO 需要测试验证
+				html.classList.add(element.classList);
+				if (element.style.cssText) {
+					html.style.cssText += element.style.cssText;
+				}
 			}
 		}
 		element.replaceWith(TEMPLATE.content);
