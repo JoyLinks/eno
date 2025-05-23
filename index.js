@@ -980,7 +980,7 @@ function element(e) {
 		}
 
 		while (e) {
-			if (e.userData) {
+			if (e.__ENO_ENTITY) {
 				return e;
 			} else {
 				e = e.parentElement;
