@@ -811,6 +811,10 @@ function setEntity(element, entity, converter) {
 			}
 		}
 	}
+	name = element.getAttribute("case");
+	if (name && name.length) {
+		converter(element, entity, name);
+	}
 	if (element.childElementCount) {
 		for (let i = 0; i < element.children.length; i++) {
 			setEntity(element.children[i], entity, converter);
