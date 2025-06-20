@@ -852,7 +852,13 @@ function getEntity(element, entity, converter) {
 		} else {
 			setValue(entity, name, element.innerText);
 		}
+	} else {
+		if (element.disabled) {
+			// 阻止禁用标签元素的子元素处理
+			return;
+		}
 	}
+
 	if (element.childElementCount) {
 		for (let i = 0; i < element.children.length; i++) {
 			getEntity(element.children[i], entity, converter);
@@ -886,9 +892,13 @@ function setEntity(element, entity, converter) {
 		// 默认处理
 		if (element.type) {
 			// 所有控件具有type属性
+			// 设置时不考虑disabled状态
 			if (element.type === "checkbox" || element.type === "radio") {
 				// Radio / Check
 				element.checked = element.value == value;
+			} else
+			if (element.type === "fieldset") {
+				//忽略
 			} else {
 				// OTHER
 				element.value = value;
