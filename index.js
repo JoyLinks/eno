@@ -1160,7 +1160,7 @@ function target(event, name, value) {
 			}
 		} else {
 			while (element && element !== event.currentTarget) {
-				if (element.getAttribute(name) == value) {
+				if (element.hasAttribute(name)) {
 					return element.getAttribute(name);
 				}
 				element = element.parentElement;
