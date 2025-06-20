@@ -12,6 +12,8 @@ export default {
 	show,
 	hide,
 	toggle,
+	classes,
+	attribute,
 
 	get,
 	gets,
@@ -205,7 +207,7 @@ function select(element, selector) {
  * @example eno.selects(element,selector);
  * @param {HTMLElement} element 要在其中查找的父标签元素
  * @param {String} selector 选择器字符串
- * @return {HTMLElement[]|null} 匹配的多个标签元素，仅匹配一个也返回数组
+ * @return {HTMLElement[]|null} 匹配的多个标签元素数组，仅匹配一个也返回数组
  */
 function selects(element, selector) {
 	if (arguments.length == 1) {
@@ -255,6 +257,7 @@ function selects(element, selector) {
  * 从文档移除标签元素
  * @param {HTMLElement} element 要在其中查找的父标签元素
  * @param {String} selector 选择器字符串
+ * @return {HTMLElement[]|null} 移除的标签元素数组
  */
 function remove(element, selector) {
 	if (arguments.length == 1) {
@@ -271,12 +274,14 @@ function remove(element, selector) {
 			element[i].remove();
 		}
 	}
+	return element;
 }
 
 /**
  * 隐藏标签元素
  * @param {HTMLElement} element 要在其中查找的父标签元素
  * @param {String} selector 选择器字符串
+ * @return {HTMLElement[]|null} 隐藏的标签元素数组
  */
 function hide(element, selector) {
 	if (arguments.length == 1) {
@@ -293,12 +298,14 @@ function hide(element, selector) {
 			hideElement(element[i]);
 		}
 	}
+	return element;
 }
 
 /**
  * 显示标签元素
  * @param {HTMLElement} element 要在其中查找的父标签元素
  * @param {String} selector 选择器字符串
+ * @return {HTMLElement[]|null} 显示的标签元素数组
  */
 function show(element, selector) {
 	if (arguments.length == 1) {
@@ -315,6 +322,7 @@ function show(element, selector) {
 			showElement(element[i]);
 		}
 	}
+	return element;
 }
 
 function hideElement(element) {
@@ -414,6 +422,7 @@ function toggleElements(elements) {
 }
 
 function toggleClass(element, apply, other) {
+	// 移除同级其它元素样式名
 	const parent = element.parentElement;
 	for (let i = 0; i < parent.children.length; i++) {
 		if (element !== parent.children[i]) {
@@ -421,6 +430,7 @@ function toggleClass(element, apply, other) {
 			parent.children[i].classList.add(other);
 		}
 	}
+	// 添加当前元素样式名
 	element.classList.remove(other);
 	element.classList.add(apply);
 }
@@ -431,6 +441,7 @@ function toggleClasses(elements, apply, other) {
 	for (let e = 0; e < elements.length; e++) {
 		element = elements[e];
 		if (element.parentElement !== parent) {
+			// 移除同级其它元素样式名
 			parent = element.parentElement;
 			for (i = 0; i < parent.children.length; i++) {
 				if (element !== parent.children[i]) {
@@ -439,9 +450,105 @@ function toggleClasses(elements, apply, other) {
 				}
 			}
 		}
+		// 添加当前元素样式名
 		element.classList.remove(other);
 		element.classList.add(apply);
 	}
+}
+
+/**
+ * 添加和移除样式名
+ * @param {HTMLElement} element 要在其中查找的父标签元素
+ * @param {String} selector 选择器字符串
+ * @param {String} apply 要添加的样式名
+ * @param {String} remove 要移除的样式名
+ * @return {HTMLElement[]} 添加或移除样式名的标签元素数组
+ * @example classes(element,apply)
+ * @example classes(element,selector,apply)
+ * @example classes(element,selector,apply,remove)
+ */
+function classes(element, selector, apply, remove) {
+	if (arguments.length == 1) {
+		// classes(element) 无效
+		return null;
+	} else
+	if (arguments.length == 2) {
+		// classes(element,selector) 无效
+		// classes(element,apply)
+		element = selects(element);
+		apply = selector;
+	} else
+	if (arguments.length == 3) {
+		// classes(element,selector,apply)
+		// classes(element,apply,remove) 无效(无法辨别)
+		element = selects(element, selector);
+	} else
+	if (arguments.length == 4) {
+		// classes(element,selector,apply,remove)
+		element = selects(element, selector);
+	}
+
+	if (element) {
+		if (apply) {
+			if (remove) {
+				for (let e = 0; e < element.length; e++) {
+					element[e].classList.remove(remove);
+					element[e].classList.add(apply);
+				}
+			} else {
+				for (let e = 0; e < element.length; e++) {
+					element[e].classList.add(apply);
+				}
+			}
+		} else {
+			if (remove) {
+				for (let e = 0; e < element.length; e++) {
+					element[e].classList.remove(remove);
+				}
+			}
+		}
+		return element;
+	}
+	return null;
+}
+
+/**
+ * 设置标签元素属性值
+ * @param {HTMLElement} element 要在其中查找的父标签元素
+ * @param {String} selector 选择器字符串
+ * @param {String} name 属性名（必须指定）
+ * @param {String} value 属性值（必须指定）
+ */
+function attribute(element, selector, name, value) {
+	if (arguments.length == 1) {
+		// attribute(element) 无效
+		return null;
+	} else
+	if (arguments.length == 2) {
+		// attribute(element,selector) 无效
+		return null;
+	} else
+	if (arguments.length == 3) {
+		// classes(element,selector,name) 无效
+		// classes(element,name,value) 
+		element = selects(element);
+		value = name;
+		name = selector;
+	} else
+	if (arguments.length == 4) {
+		// classes(element,selector,name,value)
+		element = selects(element, selector);
+	}
+
+	if (element) {
+		value = value ? value : "";
+		for (let e = 0; e < element.length; e++) {
+			element[e].setAttribute(name, value);
+		}
+		return element;
+	}
+	// 移除属性值使用情形极少
+	return null;
 }
 
 // 默认转换函数
@@ -718,7 +825,11 @@ function getEntity(element, entity, converter) {
 			// 所有控件具有type属性
 			// 所有控件具有disabled属性
 			// <select> <textarea> 没有checked属性，其余均有
-			if (!element.disabled) {
+			if (element.disabled) {
+				// <fieldset> 禁用后其内部控件全部无效，但内部控件的disabled不一定为true
+				// 阻止禁用控件的子元素处理
+				return;
+			} else {
 				if (element.type === "number" || element.type === "range") {
 					if (!isNaN(element.valueAsNumber)) {
 						setValue(entity, name, element.valueAsNumber);
@@ -811,10 +922,16 @@ function setEntity(element, entity, converter) {
 			}
 		}
 	}
+
 	name = element.getAttribute("case");
 	if (name && name.length) {
-		converter(element, entity, name);
+		if (converter(element, entity, name)) {
+			// 继续处理
+		} else {
+			return;
+		}
 	}
+
 	if (element.childElementCount) {
 		for (let i = 0; i < element.children.length; i++) {
 			setEntity(element.children[i], entity, converter);
@@ -971,6 +1088,8 @@ function entity(e, selector) {
  * 根据事件或标签元素获取由eno.sets()对应标签元素
  * @param {Event|HTMLElement} e 事件或标签元素
  * @return {HTMLElement} 实体对象对应的标签元素
+ * @example element(event);
+ * @example element(element);
  */
 function element(e) {
 	if (e) {
@@ -999,6 +1118,9 @@ function element(e) {
  * @param {Event} event
  * @param {String} name
  * @param {String} value
+ * @example target(event); 返回事件源标签元素
+ * @example target(event, name); 返回事件目标标签元素指定的属性值
+ * @example target(event, name, value); 返回事件目标指定属性和值的标签元素
  */
 function target(event, name, value) {
 	if (arguments.length == 1) {
@@ -1010,7 +1132,7 @@ function target(event, name, value) {
 		let element = event.target || event.srcElement;
 		while (element && element !== event.currentTarget) {
 			if (element.hasAttribute(name)) {
-				return element;
+				return element.getAttribute(name);
 			}
 			element = element.parentElement;
 		}
