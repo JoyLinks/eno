@@ -1119,8 +1119,9 @@ function element(e) {
  * @param {String} name
  * @param {String} value
  * @example target(event); 返回事件源标签元素
- * @example target(event, name); 返回事件目标标签元素指定的属性值
+ * @example target(event, name); 返回事件目标指定属性的标签元素
  * @example target(event, name, value); 返回事件目标指定属性和值的标签元素
+ * @example target(event, name, null); 返回事件目标指定属性标签元素的属性值
  */
 function target(event, name, value) {
 	if (arguments.length == 1) {
@@ -1132,7 +1133,7 @@ function target(event, name, value) {
 		let element = event.target || event.srcElement;
 		while (element && element !== event.currentTarget) {
 			if (element.hasAttribute(name)) {
-				return element.getAttribute(name);
+				return element;
 			}
 			element = element.parentElement;
 		}
@@ -1140,11 +1141,20 @@ function target(event, name, value) {
 	if (arguments.length == 3) {
 		// target(event, name, value);
 		let element = event.target || event.srcElement;
-		while (element && element !== event.currentTarget) {
-			if (element.getAttribute(name) == value) {
-				return element;
+		if (value) {
+			while (element && element !== event.currentTarget) {
+				if (element.getAttribute(name) == value) {
+					return element;
+				}
+				element = element.parentElement;
 			}
-			element = element.parentElement;
+		} else {
+			while (element && element !== event.currentTarget) {
+				if (element.getAttribute(name) == value) {
+					return element.getAttribute(name);
+				}
+				element = element.parentElement;
+			}
 		}
 	}
 	return null;
