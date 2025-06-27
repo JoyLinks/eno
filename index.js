@@ -518,6 +518,8 @@ function classes(element, selector, apply, remove) {
  * @param {String} selector 选择器字符串
  * @param {String} name 属性名（必须指定）
  * @param {String} value 属性值（必须指定）
+ * @example attribute(element,name,value) 
+ * @example attribute(element,selector,name,value)
  */
 function attribute(element, selector, name, value) {
 	if (arguments.length == 1) {
@@ -529,14 +531,14 @@ function attribute(element, selector, name, value) {
 		return null;
 	} else
 	if (arguments.length == 3) {
-		// classes(element,selector,name) 无效
-		// classes(element,name,value) 
+		// attribute(element,selector,name) 无效
+		// attribute(element,name,value) 
 		element = selects(element);
 		value = name;
 		name = selector;
 	} else
 	if (arguments.length == 4) {
-		// classes(element,selector,name,value)
+		// attribute(element,selector,name,value)
 		element = selects(element, selector);
 	}
 
